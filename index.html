@@ -1,10 +1,15 @@
 <!DOCTYPE html>
-<html lang="th" class="dark">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sales Intelligence</title>
+    <title>Sales & Productivity Dashboard</title>
     
+    <!-- Google Fonts: Inter (similar to Spotify's Circular font) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -13,22 +18,24 @@
             theme: {
                 extend: {
                     colors: {
-                        apple: {
-                            bg: '#000000',
-                            glass: 'rgba(30, 30, 32, 0.65)',
-                            glassHover: 'rgba(44, 44, 46, 0.8)',
-                            border: 'rgba(255, 255, 255, 0.12)',
-                            blue: '#0A84FF',
-                            green: '#30D158',
-                            orange: '#FF9F0A',
-                            red: '#FF453A',
-                            purple: '#BF5AF2',
-                            gray: '#8E8E93',
-                            grayDark: '#1C1C1E'
+                        spotify: {
+                            base: '#121212',       // Main background
+                            elevated: '#181818',   // Card background
+                            highlight: '#282828',  // Hover background
+                            press: '#000000',      // Pressed state
+                            green: '#1DB954',      // Brand Green
+                            greenHover: '#1ED760', // Hover Green
+                            text: '#FFFFFF',       // Primary Text
+                            subtext: '#B3B3B3',    // Secondary Text
+                            divider: '#2A2A2A',    // Borders
+                            error: '#E22134',      // Red
+                            warning: '#FFA42B',    // Orange/Yellow
+                            info: '#2E77D0',       // Blue
+                            purple: '#8C1932'      // Spotify genre purple
                         }
                     },
                     fontFamily: {
-                        sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Text"', '"Segoe UI"', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'], 
+                        sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'], 
                     }
                 }
             }
@@ -44,227 +51,219 @@
     
     <style>
         body { 
-            background-color: var(--apple-bg); 
-            color: #F5F5F7;
-            /* Subtle macOS Sonoma style background orbs */
-            background-image: 
-                radial-gradient(circle at 15% 0%, rgba(10, 132, 255, 0.15), transparent 30%),
-                radial-gradient(circle at 85% 100%, rgba(191, 90, 242, 0.12), transparent 30%);
-            background-attachment: fixed;
+            background-color: #121212; 
+            color: #FFFFFF;
+            font-family: 'Inter', sans-serif;
             -webkit-font-smoothing: antialiased;
         }
         
-        .glass-panel {
-            background: rgba(28, 28, 30, 0.5);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
-        }
-
-        .glass-button {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        /* Apple-like Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        /* Spotify Custom Scrollbar */
+        ::-webkit-scrollbar { width: 12px; height: 12px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.3); }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.5); }
 
+        /* Input overrides for dark mode dates */
         input[type="date"]::-webkit-calendar-picker-indicator {
-            filter: invert(1);
-            opacity: 0.5;
+            filter: invert(0.8);
+            opacity: 0.6;
             cursor: pointer;
         }
 
-        /* Smooth Detail Accordion */
-        details > summary { list-style: none; }
-        details > summary::-webkit-details-marker { display: none; }
-        
         .hidden { display: none !important; }
+        
+        /* Utility class for Spotify cards */
+        .sp-card {
+            background-color: #181818;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+        }
+        .sp-card:hover {
+            background-color: #282828;
+        }
     </style>
 </head>
-<body class="min-h-screen p-4 md:p-6 lg:p-8">
+<body class="min-h-screen selection:bg-spotify-green selection:text-white">
 
-    <!-- Supabase Config (Hidden Modal) -->
-    <div id="supabaseModal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50 backdrop-blur-md p-4">
-        <!-- Kept hidden as requested -->
-    </div>
+    <!-- Background Gradient Header (Spotify Home style) -->
+    <div class="fixed top-0 left-0 w-full h-80 bg-gradient-to-b from-[#1E3264] to-spotify-base pointer-events-none -z-10"></div>
 
-    <!-- Header (macOS style) -->
-    <div class="flex flex-col md:flex-row justify-between items-center glass-panel p-5 rounded-[2rem] mb-6">
-        <div class="flex items-center space-x-4">
-            <div class="bg-gradient-to-b from-apple-blue to-blue-700 p-3 rounded-2xl shadow-lg">
-                <i data-lucide="bar-chart-2" class="w-6 h-6 text-white"></i>
-            </div>
+    <div class="p-4 md:p-6 lg:p-8 max-w-[1600px] mx-auto z-10 relative">
+
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row justify-between items-end mb-8 pt-4">
             <div>
-                <h1 class="text-xl font-bold text-white tracking-tight">Sales Intelligence</h1>
-                <p class="text-xs text-apple-gray mt-0.5">Interactive Executive Overview</p>
+                <p class="text-sm font-bold text-spotify-subtext uppercase tracking-widest mb-1">Overview</p>
+                <h1 class="text-4xl md:text-5xl font-extrabold text-white tracking-tight" id="greetingText">Good evening</h1>
+            </div>
+            <div class="mt-5 md:mt-0 flex items-center space-x-4">
+                <div id="syncStatus" class="text-xs font-medium text-spotify-subtext flex items-center">
+                    <div class="w-2 h-2 rounded-full bg-spotify-green animate-pulse mr-2" id="syncDot"></div>
+                    <span id="syncText">Live Data</span>
+                </div>
+                <!-- Primary Button (Spotify Style) -->
+                <label class="cursor-pointer bg-spotify-green hover:bg-spotify-greenHover text-black px-8 py-3 rounded-full flex items-center transition-all hover:scale-105 active:scale-95 text-sm font-bold" id="uploadLabel">
+                    <i data-lucide="upload" class="w-4 h-4 mr-2" id="uploadIcon"></i>
+                    <i data-lucide="loader-2" class="w-4 h-4 mr-2 animate-spin hidden" id="uploadSpinner"></i>
+                    <span id="uploadText">Upload CSV</span>
+                    <input type="file" accept=".csv" class="hidden" id="csvFileInput" />
+                </label>
             </div>
         </div>
-        <div class="mt-4 md:mt-0 flex items-center space-x-3">
-            <div id="syncStatus" class="text-xs font-medium text-apple-gray flex items-center bg-white/5 px-3 py-1.5 rounded-full border border-white/10">
-                <div class="w-2 h-2 rounded-full bg-apple-gray mr-2" id="syncDot"></div>
-                <span id="syncText">Connecting...</span>
-            </div>
-            <label class="cursor-pointer bg-apple-blue hover:bg-blue-500 text-white px-5 py-2 rounded-full flex items-center transition-all text-sm font-medium shadow-lg shadow-blue-500/20" id="uploadLabel">
-                <i data-lucide="icloud" class="w-4 h-4 mr-2" id="uploadIcon"></i>
-                <i data-lucide="loader-2" class="w-4 h-4 mr-2 animate-spin hidden" id="uploadSpinner"></i>
-                <span id="uploadText">Upload Data</span>
-                <input type="file" accept=".csv" class="hidden" id="csvFileInput" />
-            </label>
-        </div>
-    </div>
 
-    <!-- Filter Bar (iOS Segmented Control Style) -->
-    <div class="glass-panel p-4 rounded-[2rem] mb-6 flex flex-col md:flex-row items-center gap-4">
-        <div class="flex items-center text-white text-sm font-medium bg-white/10 px-4 py-2 rounded-full">
-            <i data-lucide="sliders-horizontal" class="w-4 h-4 mr-2"></i> Filters
-        </div>
-        
-        <div class="flex flex-wrap gap-3 w-full items-center">
-            <!-- Date Range -->
-            <div class="flex items-center space-x-2 bg-black/30 px-4 py-1.5 rounded-full border border-white/10">
-                <input type="date" id="filterStartDate" class="bg-transparent text-white text-sm border-none focus:ring-0 p-0 outline-none w-[110px]" />
-                <i data-lucide="arrow-right" class="w-3 h-3 text-apple-gray"></i>
-                <input type="date" id="filterEndDate" class="bg-transparent text-white text-sm border-none focus:ring-0 p-0 outline-none w-[110px]" />
+        <!-- Filter Bar (Spotify Category Pills) -->
+        <div class="mb-8 flex flex-col md:flex-row items-center gap-3">
+            <div class="flex items-center text-spotify-subtext font-bold bg-spotify-highlight/50 px-4 py-2 rounded-full">
+                <i data-lucide="list-filter" class="w-4 h-4 mr-2 text-white"></i> Filters
             </div>
+            
+            <div class="flex flex-wrap gap-3 w-full items-center">
+                <!-- Date Range Pill -->
+                <div class="flex items-center space-x-2 bg-[#2A2A2A] hover:bg-[#333333] transition-colors px-4 py-2 rounded-full cursor-pointer">
+                    <input type="date" id="filterStartDate" class="bg-transparent text-white text-sm border-none focus:ring-0 p-0 outline-none w-[110px]" />
+                    <span class="text-spotify-subtext">to</span>
+                    <input type="date" id="filterEndDate" class="bg-transparent text-white text-sm border-none focus:ring-0 p-0 outline-none w-[110px]" />
+                </div>
 
-            <!-- Channel Filter -->
-            <div class="flex-1 min-w-[140px]">
-                <select id="filterChannel" class="bg-black/30 border border-white/10 text-white text-sm rounded-full focus:ring-1 focus:ring-apple-blue w-full px-4 py-2 outline-none appearance-none cursor-pointer">
-                    <option value="All">All Channels</option>
-                </select>
-            </div>
+                <!-- Channel Filter Pill -->
+                <div class="flex-1 min-w-[160px] md:flex-none">
+                    <select id="filterChannel" class="bg-[#2A2A2A] hover:bg-[#333333] text-white text-sm rounded-full focus:ring-2 focus:ring-white w-full px-5 py-2.5 outline-none appearance-none cursor-pointer transition-colors font-medium">
+                        <option value="All">All Channels</option>
+                    </select>
+                </div>
 
-            <!-- Product Group Filter -->
-            <div class="flex-1 min-w-[140px]">
-                <select id="filterGroup" class="bg-black/30 border border-white/10 text-white text-sm rounded-full focus:ring-1 focus:ring-apple-blue w-full px-4 py-2 outline-none appearance-none cursor-pointer">
-                    <option value="All">All Categories</option>
-                </select>
+                <!-- Product Group Filter Pill -->
+                <div class="flex-1 min-w-[160px] md:flex-none">
+                    <select id="filterGroup" class="bg-[#2A2A2A] hover:bg-[#333333] text-white text-sm rounded-full focus:ring-2 focus:ring-white w-full px-5 py-2.5 outline-none appearance-none cursor-pointer transition-colors font-medium">
+                        <option value="All">All Categories</option>
+                    </select>
+                </div>
             </div>
         </div>
 
         <!-- Cross Filter Indicators -->
-        <div id="activeCrossFilters" class="flex flex-wrap gap-2 w-full md:w-auto empty:hidden"></div>
-    </div>
-
-    <!-- 1. KPI Row (iOS Widget Style) -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
-        <div class="glass-panel p-5 rounded-[1.5rem] flex flex-col justify-between relative overflow-hidden group">
-            <div class="flex justify-between items-start mb-4">
-                <p class="text-sm text-apple-gray font-medium">Net Revenue</p>
-                <div class="p-2 bg-apple-blue/20 text-apple-blue rounded-full"><i data-lucide="banknote" class="w-4 h-4"></i></div>
-            </div>
-            <h3 class="text-3xl font-bold text-white tracking-tight" id="kpiRevenue">$0</h3>
+        <div id="activeCrossFilters" class="flex flex-wrap gap-2 w-full empty:hidden mb-6">
+            <!-- Injected via JS -->
         </div>
-        
-        <div class="glass-panel p-5 rounded-[1.5rem] flex flex-col justify-between relative overflow-hidden group">
-            <div class="flex justify-between items-start mb-4">
-                <p class="text-sm text-apple-gray font-medium">Gross Profit</p>
-                <div class="flex items-center space-x-2">
-                    <span class="text-xs font-bold text-apple-green bg-apple-green/20 px-2 py-0.5 rounded-full" id="kpiMargin">0.0%</span>
-                    <div class="p-2 bg-apple-green/20 text-apple-green rounded-full"><i data-lucide="pie-chart" class="w-4 h-4"></i></div>
+
+        <!-- 1. KPI Row -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+            <div class="sp-card p-6 flex flex-col group cursor-default">
+                <p class="text-sm text-spotify-subtext font-bold mb-2 uppercase tracking-wide group-hover:text-white transition-colors">Total Revenue</p>
+                <h3 class="text-3xl font-extrabold text-white mb-2 truncate" id="kpiRevenue">฿0</h3>
+                <div class="mt-auto pt-4 border-t border-spotify-divider flex items-center text-spotify-green text-sm font-medium">
+                    <i data-lucide="wallet" class="w-4 h-4 mr-1"></i> Net Sales
                 </div>
             </div>
-            <h3 class="text-3xl font-bold text-white tracking-tight" id="kpiProfit">$0</h3>
-        </div>
-
-        <div class="glass-panel p-5 rounded-[1.5rem] flex flex-col justify-between relative overflow-hidden group">
-            <div class="flex justify-between items-start mb-4">
-                <p class="text-sm text-apple-gray font-medium">Units Sold</p>
-                <div class="p-2 bg-apple-purple/20 text-apple-purple rounded-full"><i data-lucide="layers" class="w-4 h-4"></i></div>
-            </div>
-            <h3 class="text-3xl font-bold text-white tracking-tight"><span id="kpiQty">0</span> <span class="text-lg font-normal text-apple-gray">pcs</span></h3>
-        </div>
-
-        <div class="glass-panel p-5 rounded-[1.5rem] flex flex-col justify-between relative overflow-hidden group">
-            <div class="flex justify-between items-start mb-4">
-                <p class="text-sm text-apple-gray font-medium">Return Rate</p>
-                <div class="p-2 bg-apple-red/20 text-apple-red rounded-full"><i data-lucide="arrow-down-left" class="w-4 h-4"></i></div>
-            </div>
-            <h3 class="text-3xl font-bold text-white tracking-tight" id="kpiReturn">0.00%</h3>
-        </div>
-    </div>
-
-    <!-- 2. Trends & Channel Hierarchy -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <!-- Sales Trend -->
-        <div class="glass-panel p-6 rounded-[1.5rem] lg:col-span-2 flex flex-col">
-            <h3 class="text-base font-semibold text-white mb-6 flex items-center">
-                <div class="w-1.5 h-5 bg-apple-blue rounded-full mr-2"></div> Revenue & Profit Trend
-            </h3>
-            <div class="flex-1 min-h-[250px] relative w-full">
-                <canvas id="trendChart"></canvas>
-            </div>
-        </div>
-
-        <!-- NEW: Channel Groups & Sub-channels (iOS Settings Style) -->
-        <div class="glass-panel p-6 rounded-[1.5rem] lg:col-span-1 flex flex-col max-h-[350px]">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-base font-semibold text-white flex items-center">
-                    <div class="w-1.5 h-5 bg-apple-orange rounded-full mr-2"></div> Channel Breakdown
-                </h3>
-                <i data-lucide="info" class="w-4 h-4 text-apple-gray" title="Click to expand/filter"></i>
-            </div>
             
-            <!-- Hierarchy List Container -->
-            <div id="channelHierarchyList" class="flex-1 overflow-y-auto pr-2 space-y-3">
-                <!-- Injected via JS -->
+            <div class="sp-card p-6 flex flex-col group cursor-default">
+                <p class="text-sm text-spotify-subtext font-bold mb-2 uppercase tracking-wide group-hover:text-white transition-colors">Gross Profit</p>
+                <h3 class="text-3xl font-extrabold text-white mb-2 truncate" id="kpiProfit">฿0</h3>
+                <div class="mt-auto pt-4 border-t border-spotify-divider flex justify-between items-center text-sm font-medium">
+                    <span class="text-spotify-subtext">Margin</span>
+                    <span class="text-spotify-green bg-spotify-green/10 px-2 py-0.5 rounded-md" id="kpiMargin">0.0%</span>
+                </div>
+            </div>
+
+            <div class="sp-card p-6 flex flex-col group cursor-default">
+                <p class="text-sm text-spotify-subtext font-bold mb-2 uppercase tracking-wide group-hover:text-white transition-colors">Units Sold</p>
+                <h3 class="text-3xl font-extrabold text-white mb-2 truncate"><span id="kpiQty">0</span></h3>
+                <div class="mt-auto pt-4 border-t border-spotify-divider flex items-center text-spotify-subtext text-sm font-medium">
+                    <i data-lucide="package" class="w-4 h-4 mr-1"></i> Total pieces
+                </div>
+            </div>
+
+            <div class="sp-card p-6 flex flex-col group cursor-default">
+                <p class="text-sm text-spotify-subtext font-bold mb-2 uppercase tracking-wide group-hover:text-white transition-colors">Return Rate</p>
+                <h3 class="text-3xl font-extrabold text-white mb-2 truncate" id="kpiReturn">0.00%</h3>
+                <div class="mt-auto pt-4 border-t border-spotify-divider flex items-center text-spotify-error text-sm font-medium">
+                    <i data-lucide="refresh-ccw" class="w-4 h-4 mr-1"></i> Credit Notes
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- 3. Efficiency Matrix & Top Sellers -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <!-- Product Efficiency Scatter -->
-        <div class="glass-panel p-6 rounded-[1.5rem] lg:col-span-2 flex flex-col">
-            <div class="flex justify-between items-center mb-2">
-                <h3 class="text-base font-semibold text-white flex items-center">
-                    <div class="w-1.5 h-5 bg-apple-purple rounded-full mr-2"></div> Product Efficiency
-                </h3>
-                <span class="text-[10px] text-apple-gray bg-white/5 px-2 py-1 rounded-md border border-white/10">Bubble = Revenue</span>
+        <!-- 2. Trends & Branch Productivity -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <!-- Sales Trend -->
+            <div class="sp-card p-6 lg:col-span-2">
+                <h3 class="text-lg font-bold text-white mb-6">Revenue & Profit Trend</h3>
+                <div class="h-[300px] relative w-full">
+                    <canvas id="trendChart"></canvas>
+                </div>
             </div>
-            <div class="flex-1 min-h-[300px] h-[300px] relative w-full mt-2">
-                <canvas id="scatterChart"></canvas>
+
+            <!-- Branch Productivity -->
+            <div class="sp-card p-6 lg:col-span-1">
+                <h3 class="text-lg font-bold text-white mb-2">Channel Performance</h3>
+                <p class="text-xs text-spotify-subtext mb-6 font-medium">
+                    <i data-lucide="mouse-pointer-click" class="w-3 h-3 inline"></i> Click bar to cross-filter
+                </p>
+                <div class="h-[280px] relative w-full">
+                    <canvas id="branchChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Efficiency & Top Sellers -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <!-- Product Efficiency Scatter -->
+            <div class="sp-card p-6 lg:col-span-2 relative flex flex-col">
+                <div class="flex justify-between items-start mb-2">
+                    <div>
+                        <h3 class="text-lg font-bold text-white">Efficiency Matrix</h3>
+                        <p class="text-xs text-spotify-subtext mt-1 font-medium">
+                            <span class="text-white">Volume (X)</span> vs <span class="text-white">Margin (Y)</span>. Click bubble to filter.
+                        </p>
+                    </div>
+                    <div class="text-[10px] text-spotify-subtext font-bold bg-spotify-highlight px-3 py-1.5 rounded-full uppercase tracking-wider hidden sm:block">
+                        Bubble Size = Revenue
+                    </div>
+                </div>
                 
-                <!-- Quadrant Info -->
-                <div class="absolute top-2 right-4 text-[10px] font-semibold text-apple-green bg-apple-green/10 px-2 py-0.5 rounded-full pointer-events-none z-10 flex items-center border border-apple-green/20 backdrop-blur-md">Stars</div>
-                <div class="absolute bottom-10 right-4 text-[10px] font-semibold text-apple-orange bg-apple-orange/10 px-2 py-0.5 rounded-full pointer-events-none z-10 flex items-center border border-apple-orange/20 backdrop-blur-md">Cash Cows</div>
-                <div class="absolute top-2 left-12 text-[10px] font-semibold text-apple-blue bg-apple-blue/10 px-2 py-0.5 rounded-full pointer-events-none z-10 flex items-center border border-apple-blue/20 backdrop-blur-md">Opportunities</div>
-                <div class="absolute bottom-10 left-12 text-[10px] font-semibold text-apple-red bg-apple-red/10 px-2 py-0.5 rounded-full pointer-events-none z-10 flex items-center border border-apple-red/20 backdrop-blur-md">Concerns</div>
+                <div class="flex-1 min-h-[350px] relative w-full mt-4">
+                    <canvas id="scatterChart"></canvas>
+                    
+                    <!-- Subtle Quadrant Labels -->
+                    <div class="absolute top-2 right-6 text-xs font-bold text-spotify-subtext pointer-events-none z-10">STARS</div>
+                    <div class="absolute bottom-10 right-6 text-xs font-bold text-spotify-subtext pointer-events-none z-10">CASH COWS</div>
+                    <div class="absolute top-2 left-16 text-xs font-bold text-spotify-subtext pointer-events-none z-10">OPPORTUNITIES</div>
+                    <div class="absolute bottom-10 left-16 text-xs font-bold text-spotify-subtext pointer-events-none z-10">CONCERNS</div>
+                </div>
+            </div>
+
+            <!-- Top Sellers List (Tracklist style) -->
+            <div class="sp-card p-6 flex flex-col lg:col-span-1 h-full min-h-[450px]">
+                <h3 class="text-lg font-bold text-white mb-2">Top Products</h3>
+                <p class="text-xs text-spotify-subtext mb-4 font-medium">
+                    <i data-lucide="mouse-pointer-click" class="w-3 h-3 inline"></i> Select to filter
+                </p>
+                
+                <!-- Header Row -->
+                <div class="flex items-center justify-between px-2 pb-2 border-b border-spotify-divider mb-2">
+                    <span class="text-xs text-spotify-subtext font-bold w-6">#</span>
+                    <span class="text-xs text-spotify-subtext font-bold flex-1">Title</span>
+                    <span class="text-xs text-spotify-subtext font-bold text-right">Revenue</span>
+                </div>
+
+                <div id="topSellersList" class="flex-1 overflow-y-auto space-y-1 pr-2 -mr-2">
+                    <!-- Injected via JS -->
+                </div>
             </div>
         </div>
 
-        <!-- Top Sellers List -->
-        <div class="glass-panel p-6 rounded-[1.5rem] lg:col-span-1 flex flex-col min-h-[300px]">
-            <h3 class="text-base font-semibold text-white mb-4 flex items-center">
-                <div class="w-1.5 h-5 bg-apple-green rounded-full mr-2"></div> Top Products
-            </h3>
-            <div id="topSellersList" class="flex-1 overflow-y-auto space-y-2 pr-1">
-                <!-- Injected via JS -->
+        <!-- 4. Actionable Insights Panel -->
+        <div class="mb-10">
+            <h2 class="text-2xl font-bold text-white mb-6">Executive Insights</h2>
+            <div id="insightsPanel" class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <!-- Insights will be injected here via JS -->
             </div>
         </div>
-    </div>
 
-    <!-- 4. Actionable Insights -->
-    <div class="glass-panel rounded-[1.5rem] flex flex-col overflow-hidden mb-6">
-        <div class="bg-white/5 p-4 border-b border-white/10 flex items-center">
-            <i data-lucide="sparkles" class="w-4 h-4 mr-2 text-apple-orange"></i> 
-            <h3 class="text-sm font-semibold text-white">Siri-like Insights</h3>
-        </div>
-        <div id="insightsPanel" class="grid grid-cols-1 md:grid-cols-3 gap-px bg-white/10">
-            <!-- Insights will be injected here via JS -->
-        </div>
     </div>
 
     <!-- Main JavaScript Logic -->
     <script>
-        // --- Backend Config (Hidden) ---
+        // --- Supabase Config (Hidden backend config) ---
         const SUPA_URL = "https://wzoyahpilghrffedbclc.supabase.co";
         const SUPA_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6b3lhaHBpbGdocmZmZWRiY2xjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NTI5MDEsImV4cCI6MjA4OTQyODkwMX0.uv-Mw91g0a2qkhZyMdeEmwQXI2d9EMP5QC-vM5arjyw";
         const SUPA_TABLE = "sales_txn";
@@ -274,25 +273,20 @@
         lucide.createIcons();
         Chart.register(window['chartjs-plugin-annotation']);
 
-        // macOS Chart defaults
-        Chart.defaults.color = '#8E8E93'; 
-        Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif';
+        // Spotify Chart defaults
+        Chart.defaults.color = '#B3B3B3'; 
+        Chart.defaults.font.family = 'Inter, sans-serif';
         const gridColor = 'rgba(255, 255, 255, 0.05)'; 
 
         let rawData = [];
         let filteredData = [];
         let saleMethodMap = {}; 
-        let charts = { trend: null, scatter: null };
-        
-        // Cross-Filter States
+        let charts = { trend: null, branch: null, scatter: null };
         let activeProductFilter = null;
-        let activeGroupFilter = null;
-        let activeSubChannelFilter = null;
 
-        const colors = {
-            blue: '#0A84FF', green: '#30D158', orange: '#FF9F0A', 
-            purple: '#BF5AF2', red: '#FF453A', gray: '#8E8E93'
-        };
+        // Spotify Palette for Charts
+        const cGreen = '#1DB954', cWhite = '#FFFFFF', cGray = '#B3B3B3';
+        const cBlue = '#2E77D0', cOrange = '#FFA42B', cRed = '#E22134', cPurple = '#8C1932';
 
         const elFilters = {
             start: document.getElementById('filterStartDate'),
@@ -305,26 +299,33 @@
             margin: document.getElementById('kpiMargin'), qty: document.getElementById('kpiQty'),
             returnRate: document.getElementById('kpiReturn')
         };
+        const elInsights = document.getElementById('insightsPanel');
 
-        const formatCurr = (val) => new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', minimumFractionDigits: 0 }).format(val);
-        const formatNum = (val) => new Intl.NumberFormat('th-TH').format(val);
+        const formatCurr = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'THB', minimumFractionDigits: 0 }).format(val);
+        const formatNum = (val) => new Intl.NumberFormat('en-US').format(val);
 
+        // Dynamic Greeting based on time
+        const hour = new Date().getHours();
+        const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+        document.getElementById('greetingText').innerText = greeting;
+
+        // UI Feedback Handlers
         const setSyncStatus = (status, text) => {
             const dot = document.getElementById('syncDot');
             const txt = document.getElementById('syncText');
             if(status === 'loading') {
-                dot.className = "w-2 h-2 rounded-full bg-apple-orange animate-pulse mr-2";
+                dot.className = "w-2 h-2 rounded-full bg-spotify-warning animate-pulse mr-2";
                 txt.innerText = text || "Syncing...";
             } else if (status === 'error') {
-                dot.className = "w-2 h-2 rounded-full bg-apple-red mr-2";
+                dot.className = "w-2 h-2 rounded-full bg-spotify-error mr-2";
                 txt.innerText = text || "Offline";
             } else {
-                dot.className = "w-2 h-2 rounded-full bg-apple-green animate-pulse mr-2";
-                txt.innerText = text || "Live";
+                dot.className = "w-2 h-2 rounded-full bg-spotify-green mr-2";
+                txt.innerText = text || "Live Data";
             }
         }
 
-        // --- Data Logic ---
+        // --- Data Categorization & Enrichment ---
         const categorizeChannelFallback = (rawChannel) => {
             if (!rawChannel) return 'Other';
             const lower = rawChannel.toLowerCase();
@@ -361,25 +362,21 @@
             let finalRevenue = isNegative ? -revenue : revenue;
             let finalCost = isNegative ? -cogs : cogs;
             
-            let channelGroup = 'Other';
-            let subChannel = obj.SaleMethodName || obj.SaleChannelName || 'Unknown';
-
+            let channelName = 'Other';
             if (Object.keys(saleMethodMap).length > 0 && obj.SaleMethod) {
-                let mappedData = saleMethodMap[obj.SaleMethod];
-                if (mappedData) {
-                    channelGroup = mappedData.group.replace(/^MP\s+/i, '').trim();
-                    subChannel = mappedData.sub || subChannel;
+                let mappedChannel = saleMethodMap[obj.SaleMethod];
+                if (mappedChannel) {
+                    channelName = mappedChannel.replace(/^MP\s+/i, '').trim();
                 }
             } else {
-                channelGroup = categorizeChannelFallback(obj.SaleChannelName);
+                channelName = categorizeChannelFallback(obj.SaleChannelName);
             }
 
             return {
                 ...obj, 
                 NumericQty: finalQty, NumericRevenue: finalRevenue, NumericCost: finalCost, 
                 YearMonth: obj.InvDate && obj.InvDate.length >= 7 ? obj.InvDate.substring(0, 7) : 'Unknown',
-                SaleChannelGroup: channelGroup,
-                SubChannelName: subChannel,
+                SaleChannelName: channelName,
                 ProductGroup: obj.deptname ? obj.deptname : (obj.ProductName ? 'Uncategorized' : 'Unknown')
             };
         };
@@ -422,9 +419,9 @@
             return result;
         };
 
-        // --- Database ---
+        // --- Database Operations ---
         const fetchDashboardData = async () => {
-            setSyncStatus('loading', 'Fetching DB...');
+            setSyncStatus('loading', 'Fetching...');
             try {
                 const baseUrl = SUPA_URL.replace(/\/$/, '');
                 const headers = { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}`, 'Content-Type': 'application/json' };
@@ -436,12 +433,7 @@
                         const methodsData = await methodRes.json();
                         saleMethodMap = {};
                         methodsData.forEach(m => {
-                            if (m.SaleMethodID) {
-                                saleMethodMap[m.SaleMethodID] = {
-                                    group: m['Sales Channel'] || 'Other',
-                                    sub: m['Name'] || 'Unknown'
-                                };
-                            }
+                            if (m.SaleMethodID) saleMethodMap[m.SaleMethodID] = m['Sales Channel'];
                         });
                     }
                 } catch (e) { console.warn("No method map"); }
@@ -456,7 +448,7 @@
                     rawData = data.map(enrichData).filter(item => item !== null);
                     populateFilterOptions();
                     applyFilters();
-                    setSyncStatus('success', 'Live');
+                    setSyncStatus('success', 'Live Data');
                 } else setSyncStatus('error', 'DB Empty');
             } catch (err) {
                 setSyncStatus('error', 'Offline');
@@ -477,7 +469,7 @@
                         headers: { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
                         body: JSON.stringify(chunk)
                     });
-                    if (!response.ok) throw new Error(`Chunk failed`);
+                    if (!response.ok) throw new Error(`Chunk upload failed`);
                 }
                 await fetchDashboardData();
             } catch (err) {
@@ -488,39 +480,35 @@
 
         const generateMockData = () => {
             const data = [];
-            const channels = [
-                {g: 'Modern trade', sub: 'SB Bangna'}, {g: 'Modern trade', sub: 'B2S'}, 
-                {g: 'Online', sub: 'Shopee'}, {g: 'Online', sub: 'Lazada'},
-                {g: 'Showroom', sub: 'Main Showroom'}, {g: 'Event', sub: 'Commart'}
-            ];
+            const channels = ['Showroom', 'Modern trade', 'Online', 'Event', 'B2B Project', 'Subscription'];
             const products = [
-                { name: 'Product A (Premium)', group: 'Main', cost: 1500, price: 3500 },
-                { name: 'Product B (Standard)', group: 'Main', cost: 800, price: 1200 },
-                { name: 'Product C (Eco)', group: 'Acc', cost: 200, price: 299 },
-                { name: 'Product D (Misc)', group: 'Acc', cost: 50, price: 250 },
-                { name: 'เงินมัดจำ', group: 'Service', cost: 0, price: 5000 } // filtered out
+                { name: 'Product A (Premium)', group: 'Main Equipment', cost: 1500, price: 3500 },
+                { name: 'Product B (Standard)', group: 'Main Equipment', cost: 800, price: 1200 },
+                { name: 'Product C (Economy)', group: 'Accessories', cost: 200, price: 299 },
+                { name: 'Product D (Misc)', group: 'Accessories', cost: 50, price: 250 },
+                { name: 'เงินมัดจำ', group: 'Service', cost: 0, price: 5000 } 
             ];
             for (let i = 0; i < 800; i++) {
                 const isReturn = Math.random() > 0.95;
-                const ch = channels[Math.floor(Math.random() * channels.length)];
-                const p = products[Math.floor(Math.random() * products.length)];
+                const channel = channels[Math.floor(Math.random() * channels.length)];
+                const product = products[Math.floor(Math.random() * products.length)];
                 const qty = Math.floor(Math.random() * 5) + 1;
                 const date = new Date(); date.setDate(date.getDate() - Math.floor(Math.random() * 90));
                 
                 const enriched = enrichData({
                     InvType: isReturn ? 'CN' : 'N', InvDate: date.toISOString().split('T')[0],
-                    SaleChannelName: ch.g, SaleMethodName: ch.sub, SaleMethod: null,
-                    ProductName: p.name, deptname: p.group,
-                    Qty: qty, UnitPrice: p.price, DiscountRate: 0, OthItemDiscAmt: 0, AvgCost: p.cost
+                    SaleChannelName: channel, SaleMethod: null,
+                    ProductName: product.name, deptname: product.group,
+                    Qty: qty, UnitPrice: product.price, DiscountRate: 0, OthItemDiscAmt: 0, AvgCost: product.cost
                 });
                 if (enriched) data.push(enriched);
             }
             return data;
         };
 
-        // --- Core UI & Filters ---
+        // --- Dashboard Update Logic ---
         const populateFilterOptions = () => {
-            const channels = ['All', ...Array.from(new Set(rawData.map(d => d.SaleChannelGroup))).filter(Boolean).sort()];
+            const channels = ['All', ...Array.from(new Set(rawData.map(d => d.SaleChannelName))).filter(Boolean).sort()];
             const groups = ['All', ...Array.from(new Set(rawData.map(d => d.ProductGroup))).filter(Boolean).sort()];
             
             elFilters.channel.innerHTML = channels.map(c => `<option value="${c}">${c === 'All' ? 'All Channels' : c}</option>`).join('');
@@ -536,24 +524,21 @@
         const renderActiveFilters = () => {
             const container = document.getElementById('activeCrossFilters');
             let html = '';
-            const pillStyle = "bg-white/10 text-white text-xs px-3 py-1 rounded-full flex items-center cursor-pointer border border-white/20 hover:bg-white/20 transition-colors backdrop-blur-md";
-            
             if (activeProductFilter) {
-                html += `<span class="${pillStyle}" onclick="toggleProductFilter(null)"><i data-lucide="package" class="w-3 h-3 mr-1 text-apple-purple"></i> ${activeProductFilter} <i data-lucide="x-circle" class="w-3 h-3 ml-2 opacity-50"></i></span>`;
-            }
-            if (activeGroupFilter) {
-                html += `<span class="${pillStyle}" onclick="toggleGroupFilter(null)"><i data-lucide="folder" class="w-3 h-3 mr-1 text-apple-orange"></i> Group: ${activeGroupFilter} <i data-lucide="x-circle" class="w-3 h-3 ml-2 opacity-50"></i></span>`;
-            }
-            if (activeSubChannelFilter) {
-                html += `<span class="${pillStyle}" onclick="toggleSubChannelFilter(null)"><i data-lucide="map-pin" class="w-3 h-3 mr-1 text-apple-blue"></i> Branch: ${activeSubChannelFilter} <i data-lucide="x-circle" class="w-3 h-3 ml-2 opacity-50"></i></span>`;
+                html += `
+                <span class="bg-white text-black font-bold text-sm px-4 py-1.5 rounded-full flex items-center cursor-pointer hover:bg-gray-200 transition-colors" onclick="toggleProductFilter(null)">
+                    ${activeProductFilter} 
+                    <i data-lucide="x" class="w-3 h-3 ml-2"></i>
+                </span>`;
             }
             container.innerHTML = html;
             lucide.createIcons();
         };
 
-        window.toggleProductFilter = (name) => { activeProductFilter = (activeProductFilter === name) ? null : name; applyFilters(); };
-        window.toggleGroupFilter = (name) => { activeGroupFilter = (activeGroupFilter === name) ? null : name; if(!activeGroupFilter) activeSubChannelFilter = null; applyFilters(); };
-        window.toggleSubChannelFilter = (name) => { activeSubChannelFilter = (activeSubChannelFilter === name) ? null : name; applyFilters(); };
+        window.toggleProductFilter = (productName) => {
+            activeProductFilter = (activeProductFilter === productName) ? null : productName;
+            applyFilters();
+        };
 
         const applyFilters = () => {
             const start = elFilters.start.value;
@@ -565,18 +550,15 @@
                 const rDate = row.InvDate || '';
                 return (!start || rDate >= start) && 
                        (!end || rDate <= end) && 
-                       (channel === 'All' || row.SaleChannelGroup === channel) && 
+                       (channel === 'All' || row.SaleChannelName === channel) && 
                        (group === 'All' || row.ProductGroup === group) &&
-                       (!activeProductFilter || row.ProductName === activeProductFilter) &&
-                       (!activeGroupFilter || row.SaleChannelGroup === activeGroupFilter) &&
-                       (!activeSubChannelFilter || row.SubChannelName === activeSubChannelFilter);
+                       (!activeProductFilter || row.ProductName === activeProductFilter);
             });
             
             renderActiveFilters();
             updateDashboard();
         };
 
-        // --- Renderers ---
         const updateDashboard = () => {
             let totalRev = 0, totalCost = 0, totalQty = 0, returnQty = 0;
             filteredData.forEach(r => {
@@ -594,7 +576,6 @@
             elKpis.qty.innerText = formatNum(totalQty);
             elKpis.returnRate.innerText = `${retRate.toFixed(2)}%`;
 
-            // Trend
             const tMap = {};
             filteredData.forEach(r => {
                 if (r.YearMonth === 'Unknown') return;
@@ -603,143 +584,83 @@
             });
             const tData = Object.values(tMap).sort((a, b) => a.name.localeCompare(b.name));
 
-            // Product Scatter
+            const bMap = {};
+            filteredData.forEach(r => {
+                const b = r.SaleChannelName || 'Unknown';
+                if (!bMap[b]) bMap[b] = { name: b, rev: 0, prof: 0 };
+                bMap[b].rev += r.NumericRevenue; bMap[b].prof += (r.NumericRevenue - r.NumericCost);
+            });
+            const bData = Object.values(bMap).map(b => ({
+                ...b, margin: b.rev > 0 ? (b.prof / b.rev) * 100 : 0
+            })).sort((a, b) => b.rev - a.rev);
+
             const pMap = {};
             filteredData.forEach(r => {
-                if (!pMap[r.ProductName]) pMap[r.ProductName] = { name: r.ProductName, rev: 0, cost: 0, qty: 0 };
-                pMap[r.ProductName].rev += r.NumericRevenue; pMap[r.ProductName].cost += r.NumericCost; pMap[r.ProductName].qty += r.NumericQty;
+                const p = r.ProductName || 'Unknown';
+                if (!pMap[p]) pMap[p] = { name: p, rev: 0, cost: 0, qty: 0, group: r.ProductGroup };
+                pMap[p].rev += r.NumericRevenue; pMap[p].cost += r.NumericCost; pMap[p].qty += r.NumericQty;
             });
             const pData = Object.values(pMap).filter(p => p.qty > 0 && p.rev > 0).map(p => {
                 const prf = p.rev - p.cost; return { ...p, profit: prf, margin: (prf / p.rev) * 100 };
             });
+
             const avgQty = pData.length ? pData.reduce((s, c) => s + c.qty, 0) / pData.length : 0;
             const avgMargin = pData.length ? pData.reduce((s, c) => s + c.margin, 0) / pData.length : 0;
 
-            // Channel Hierarchy (Group -> Sub)
-            const hMap = {};
-            // Base on rawData to always show full hierarchy structure, but calculate numbers from filteredData
-            // Actually, best to calculate hierarchy based on filteredData so it reflects dates/products
-            filteredData.forEach(r => {
-                const g = r.SaleChannelGroup; const s = r.SubChannelName;
-                if (!hMap[g]) hMap[g] = { name: g, rev: 0, subs: {} };
-                if (!hMap[g].subs[s]) hMap[g].subs[s] = { name: s, rev: 0 };
-                hMap[g].rev += r.NumericRevenue;
-                hMap[g].subs[s].rev += r.NumericRevenue;
-            });
-
-            updateCharts(tData, pData, avgQty, avgMargin);
-            updateHierarchyList(hMap, totalRev);
+            updateCharts(tData, bData, pData, avgQty, avgMargin);
             updateTopSellers(pData);
-            updateInsights(Object.values(hMap).sort((a,b)=>b.rev-a.rev), pData, avgQty, avgMargin);
-        };
-
-        const updateHierarchyList = (hMap, totalSystemRev) => {
-            const container = document.getElementById('channelHierarchyList');
-            const groups = Object.values(hMap).sort((a, b) => b.rev - a.rev);
-            
-            if(groups.length === 0) {
-                container.innerHTML = '<div class="text-sm text-apple-gray text-center py-4">No data</div>';
-                return;
-            }
-
-            let html = '';
-            groups.forEach(g => {
-                const isGroupSelected = activeGroupFilter === g.name;
-                const gPct = totalSystemRev ? ((g.rev / totalSystemRev) * 100).toFixed(1) : 0;
-                const subs = Object.values(g.subs).sort((a, b) => b.rev - a.rev);
-                
-                // details/summary for macOS native accordion
-                html += `
-                <details class="group bg-white/5 rounded-xl border border-white/5 overflow-hidden transition-all duration-300" ${isGroupSelected || subs.length<3 ? 'open' : ''}>
-                    <summary class="p-3 cursor-pointer hover:bg-white/5 transition-colors flex flex-col relative outline-none" onclick="event.preventDefault(); toggleGroupFilter('${g.name}')">
-                        <!-- Progress Background -->
-                        <div class="absolute top-0 left-0 bottom-0 bg-apple-blue/10 pointer-events-none" style="width: ${gPct}%"></div>
-                        
-                        <div class="flex justify-between items-center relative z-10">
-                            <div class="flex items-center text-sm font-bold text-white">
-                                <i data-lucide="chevron-right" class="w-4 h-4 mr-2 text-apple-gray transition-transform duration-200 group-open:rotate-90"></i>
-                                ${g.name}
-                            </div>
-                            <div class="text-right">
-                                <span class="text-sm font-semibold text-white block">${formatCurr(g.rev)}</span>
-                            </div>
-                        </div>
-                    </summary>
-                    <div class="px-3 pb-3 pt-1 space-y-1 border-t border-white/5 bg-black/20">
-                `;
-                
-                subs.forEach(s => {
-                    const isSubSelected = activeSubChannelFilter === s.name;
-                    const subBg = isSubSelected ? 'bg-apple-blue/20 border-apple-blue/50' : 'hover:bg-white/10 border-transparent';
-                    const sPct = g.rev ? ((s.rev / g.rev) * 100).toFixed(1) : 0;
-                    
-                    html += `
-                        <div class="p-2 rounded-lg cursor-pointer flex flex-col relative border ${subBg} transition-colors ml-5" onclick="toggleSubChannelFilter('${s.name.replace(/'/g, "\\'")}')">
-                            <div class="absolute bottom-0 left-2 right-2 h-0.5 bg-white/10 rounded-full overflow-hidden">
-                                <div class="h-full bg-apple-blue/50" style="width: ${sPct}%"></div>
-                            </div>
-                            <div class="flex justify-between items-center mb-1 relative z-10">
-                                <span class="text-xs text-slate-300 truncate pr-2 flex items-center">
-                                    <div class="w-1.5 h-1.5 rounded-full bg-apple-gray mr-2"></div>${s.name}
-                                </span>
-                                <span class="text-xs text-white">${formatCurr(s.rev)}</span>
-                            </div>
-                        </div>
-                    `;
-                });
-                
-                html += `</div></details>`;
-            });
-            container.innerHTML = html;
-            lucide.createIcons();
+            updateInsights(bData, pData, avgQty, avgMargin);
         };
 
         const updateTopSellers = (pData) => {
-            const sorted = [...pData].sort((a,b) => b.rev - a.rev).slice(0, 8);
+            const sorted = [...pData].sort((a,b) => b.rev - a.rev).slice(0, 10);
             let html = '';
             sorted.forEach((p, idx) => {
                 const isSelected = activeProductFilter === p.name;
-                const bg = isSelected ? 'bg-apple-purple/20 border-apple-purple/50' : 'bg-white/5 border-white/5 hover:bg-white/10';
+                const txtColor = isSelected ? 'text-spotify-green' : 'text-white group-hover:text-spotify-green';
                 
                 html += `
-                <div class="p-2.5 rounded-xl border ${bg} cursor-pointer transition-colors flex items-center justify-between" onclick="toggleProductFilter('${p.name.replace(/'/g, "\\'")}')">
-                    <div class="flex items-center overflow-hidden pr-2">
-                        <span class="text-[10px] font-bold w-5 h-5 rounded-full bg-black/50 text-apple-gray flex items-center justify-center mr-2 flex-shrink-0">${idx+1}</span>
+                <div class="flex items-center justify-between p-2 rounded-md hover:bg-white/10 group cursor-pointer transition-colors ${isSelected ? 'bg-white/5' : ''}" onclick="toggleProductFilter('${p.name.replace(/'/g, "\\'")}')">
+                    <div class="flex items-center gap-4 overflow-hidden pr-2">
+                        <span class="text-spotify-subtext w-4 text-right font-medium text-sm">${idx+1}</span>
                         <div class="flex flex-col truncate">
-                            <span class="text-xs text-white truncate font-medium" title="${p.name}">${p.name}</span>
+                            <span class="${txtColor} font-bold text-sm truncate" title="${p.name}">${p.name}</span>
+                            <span class="text-spotify-subtext text-xs truncate">${p.group}</span>
                         </div>
                     </div>
-                    <span class="text-xs font-semibold text-apple-green whitespace-nowrap">${formatCurr(p.rev)}</span>
+                    <span class="text-spotify-subtext text-sm font-medium whitespace-nowrap">${formatCurr(p.rev)}</span>
                 </div>`;
             });
-            document.getElementById('topSellersList').innerHTML = html || '<p class="text-xs text-apple-gray">No data</p>';
+            
+            document.getElementById('topSellersList').innerHTML = html || '<p class="text-spotify-subtext text-sm text-center py-8">No data available</p>';
         };
 
         // --- Charts ---
         const tooltipConfig = {
-            backgroundColor: 'rgba(28, 28, 30, 0.85)', titleColor: '#FFFFFF', bodyColor: '#EBEBF5', borderColor: 'rgba(255,255,255,0.1)',
-            borderWidth: 1, padding: 10, cornerRadius: 10, usePointStyle: true,
-            titleFont: { size: 13, weight: 'bold', family: '-apple-system' }, bodyFont: { size: 12, family: '-apple-system' }
+            backgroundColor: '#282828', titleColor: '#FFFFFF', bodyColor: '#B3B3B3', borderColor: '#121212',
+            borderWidth: 0, padding: 12, cornerRadius: 8, usePointStyle: true,
+            titleFont: { size: 14, weight: 'bold', family: 'Inter' }, bodyFont: { size: 13, family: 'Inter' }
         };
 
-        const updateCharts = (tData, pData, avgQty, avgMargin) => {
+        const updateCharts = (tData, bData, pData, avgQty, avgMargin) => {
             const commonScales = {
-                x: { grid: { color: gridColor, drawBorder: false }, ticks: { color: '#8E8E93', font: { family: '-apple-system' } } },
-                y: { grid: { color: gridColor, drawBorder: false }, border: { dash: [4, 4] }, ticks: { color: '#8E8E93', font: { family: '-apple-system' } } }
+                x: { grid: { color: gridColor, drawBorder: false }, ticks: { color: '#B3B3B3', font: { family: 'Inter' } } },
+                y: { grid: { color: gridColor, drawBorder: false }, border: { dash: [4, 4] }, ticks: { color: '#B3B3B3', font: { family: 'Inter' } } }
             };
 
+            // Trend
             const tCtx = document.getElementById('trendChart').getContext('2d');
             if (charts.trend) charts.trend.destroy();
-            let gradBlue = tCtx.createLinearGradient(0, 0, 0, 300);
-            gradBlue.addColorStop(0, 'rgba(10, 132, 255, 0.3)'); gradBlue.addColorStop(1, 'rgba(10, 132, 255, 0)');
+            let gradientGreen = tCtx.createLinearGradient(0, 0, 0, 300);
+            gradientGreen.addColorStop(0, 'rgba(29, 185, 84, 0.4)'); gradientGreen.addColorStop(1, 'rgba(29, 185, 84, 0)');
 
             charts.trend = new Chart(tCtx, {
                 type: 'line',
                 data: {
                     labels: tData.map(d => d.name),
                     datasets: [
-                        { label: 'Revenue', data: tData.map(d => d.rev), borderColor: colors.blue, backgroundColor: gradBlue, borderWidth: 3, tension: 0.4, fill: true, pointRadius: 0, pointHoverRadius: 5 },
-                        { label: 'Profit', data: tData.map(d => d.prof), borderColor: colors.green, borderWidth: 2, borderDash: [5, 5], tension: 0.4, pointRadius: 0, pointHoverRadius: 5 }
+                        { label: 'Revenue', data: tData.map(d => d.rev), borderColor: cGreen, backgroundColor: gradientGreen, borderWidth: 3, tension: 0.4, fill: true, pointRadius: 0, pointHoverRadius: 6, pointBackgroundColor: cWhite },
+                        { label: 'Profit', data: tData.map(d => d.prof), borderColor: cWhite, borderWidth: 2, borderDash: [5, 5], tension: 0.4, pointRadius: 0, pointHoverRadius: 6, pointBackgroundColor: cGreen }
                     ]
                 },
                 options: { 
@@ -749,17 +670,52 @@
                 }
             });
 
+            // Branch
+            const bCtx = document.getElementById('branchChart').getContext('2d');
+            if (charts.branch) charts.branch.destroy();
+            charts.branch = new Chart(bCtx, {
+                type: 'bar',
+                data: {
+                    labels: bData.map(d => d.name),
+                    datasets: [
+                        { type: 'line', label: 'Margin %', data: bData.map(d => d.margin), borderColor: cWhite, backgroundColor: cWhite, yAxisID: 'y1', borderWidth: 2, tension: 0.4, pointRadius: 4, pointBackgroundColor: '#181818' },
+                        { type: 'bar', label: 'Revenue', data: bData.map(d => d.rev), backgroundColor: cGreen, hoverBackgroundColor: '#1ED760', borderRadius: 4, yAxisID: 'y', barPercentage: 0.6 }
+                    ]
+                },
+                options: { 
+                    responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+                    onClick: (e, elements, chart) => {
+                        if(elements[0]) {
+                            const bName = chart.data.labels[elements[0].index];
+                            const selectEl = document.getElementById('filterChannel');
+                            selectEl.value = (selectEl.value === bName) ? 'All' : bName;
+                            applyFilters();
+                        }
+                    },
+                    onHover: (e, elements) => { e.native.target.style.cursor = elements[0] ? 'pointer' : 'default'; },
+                    scales: { 
+                        x: commonScales.x,
+                        y: { ...commonScales.y, position: 'left', ticks: { ...commonScales.y.ticks, callback: v => `$${v/1000}k` } },
+                        y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#B3B3B3', font: {family:'Inter'}, callback: v => `${v}%` } }
+                    },
+                    plugins: { tooltip: { ...tooltipConfig, callbacks: { label: c => c.datasetIndex === 0 ? ` ${c.dataset.label}: ${c.raw.toFixed(1)}%` : ` ${c.dataset.label}: ${formatCurr(c.raw)}` } }, legend: { display: false } }
+                }
+            });
+
+            // Scatter
             const sCtx = document.getElementById('scatterChart').getContext('2d');
             if (charts.scatter) charts.scatter.destroy();
             const maxRev = Math.max(...pData.map(d => d.rev), 1);
             const bubbleData = pData.map(d => {
-                let c = '#8E8E93'; 
-                if (d.qty >= avgQty && d.margin >= avgMargin) c = colors.green; 
-                else if (d.qty >= avgQty && d.margin < avgMargin) c = colors.orange; 
-                else if (d.qty < avgQty && d.margin >= avgMargin) c = colors.blue; 
-                else c = colors.red; 
-                if (activeProductFilter && d.name !== activeProductFilter) c = 'rgba(142, 142, 147, 0.2)';
-                return { x: d.qty, y: d.margin, r: Math.max((d.rev / maxRev) * 20, 5), rawRev: d.rev, name: d.name, bgColor: c };
+                let color = cGray; 
+                if (d.qty >= avgQty && d.margin >= avgMargin) color = cGreen; // Stars
+                else if (d.qty >= avgQty && d.margin < avgMargin) color = cOrange; // Cows
+                else if (d.qty < avgQty && d.margin >= avgMargin) color = cBlue; // Opps
+                else color = cRed; // Concerns
+                
+                if (activeProductFilter && d.name !== activeProductFilter) color = '#333333';
+
+                return { x: d.qty, y: d.margin, r: Math.max((d.rev / maxRev) * 20, 6), rawRev: d.rev, name: d.name, bgColor: color };
             });
 
             charts.scatter = new Chart(sCtx, {
@@ -767,28 +723,31 @@
                 data: {
                     datasets: [{
                         data: bubbleData,
-                        backgroundColor: bubbleData.map(d => d.bgColor.startsWith('rgba') ? d.bgColor : d.bgColor + '80'),
+                        backgroundColor: bubbleData.map(d => d.bgColor + 'E6'), // 90% opacity
                         borderColor: bubbleData.map(d => d.bgColor), borderWidth: 1,
-                        hoverBackgroundColor: bubbleData.map(d => d.bgColor.startsWith('rgba') ? d.bgColor : d.bgColor + 'E6'),
+                        hoverBackgroundColor: bubbleData.map(d => d.bgColor),
                     }]
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     onClick: (e, elements, chart) => {
-                        if(elements[0]) window.toggleProductFilter(chart.data.datasets[0].data[elements[0].index].name);
+                        if(elements[0]) {
+                            const pName = chart.data.datasets[0].data[elements[0].index].name;
+                            window.toggleProductFilter(pName);
+                        }
                     },
                     onHover: (e, elements) => { e.native.target.style.cursor = elements[0] ? 'pointer' : 'default'; },
                     scales: {
-                        x: { ...commonScales.x, title: { display: true, text: 'Volume (Units)', color: '#8E8E93' } },
-                        y: { ...commonScales.y, title: { display: true, text: 'Margin (%)', color: '#8E8E93' } }
+                        x: { ...commonScales.x, title: { display: true, text: 'Sales Volume (Units)', color: '#B3B3B3', font: {family:'Inter', size: 12} } },
+                        y: { ...commonScales.y, title: { display: true, text: 'Profit Margin (%)', color: '#B3B3B3', font: {family:'Inter', size: 12} } }
                     },
                     plugins: {
                         legend: { display: false },
-                        tooltip: { ...tooltipConfig, callbacks: { label: c => { const d = c.raw; return [d.name, `Rev: ${formatCurr(d.rawRev)}`, `Vol: ${formatNum(d.x)}`, `Margin: ${d.y.toFixed(1)}%`]; } } },
+                        tooltip: { ...tooltipConfig, callbacks: { label: c => { const d = c.raw; return [d.name, `Revenue: ${formatCurr(d.rawRev)}`, `Volume: ${formatNum(d.x)} units`, `Margin: ${d.y.toFixed(1)}%`]; } } },
                         annotation: {
                             annotations: {
-                                lineX: { type: 'line', xMin: avgQty, xMax: avgQty, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1, borderDash: [4, 4] },
-                                lineY: { type: 'line', yMin: avgMargin, yMax: avgMargin, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1, borderDash: [4, 4] }
+                                lineX: { type: 'line', xMin: avgQty, xMax: avgQty, borderColor: '#333333', borderWidth: 2, borderDash: [6, 6] },
+                                lineY: { type: 'line', yMin: avgMargin, yMax: avgMargin, borderColor: '#333333', borderWidth: 2, borderDash: [6, 6] }
                             }
                         }
                     }
@@ -796,21 +755,21 @@
             });
         };
 
-        const updateInsights = (gData, pData, avgQty, avgMargin) => {
+        const updateInsights = (bData, pData, avgQty, avgMargin) => {
             elInsights.innerHTML = '';
             if (!filteredData.length) return;
 
             let html = '';
             
-            if (gData.length > 0) {
+            if (bData.length > 1) {
                 html += `
-                <div class="p-5 flex flex-col bg-white/5 relative group hover:bg-white/10 transition-colors">
-                    <div class="flex items-center mb-2">
-                        <i data-lucide="compass" class="w-4 h-4 text-apple-blue mr-2"></i>
-                        <h4 class="text-sm font-semibold text-white">Channel Leader</h4>
+                <div class="sp-card p-6 flex flex-col hover:bg-spotify-highlight transition-colors cursor-pointer">
+                    <div class="w-12 h-12 rounded-full bg-spotify-info/20 flex items-center justify-center mb-4">
+                        <i data-lucide="store" class="w-6 h-6 text-spotify-info"></i>
                     </div>
-                    <p class="text-xs text-apple-gray leading-relaxed">
-                        <span class="text-white font-medium">${gData[0].name}</span> dominates revenue. Adapt its success model for <span class="text-white opacity-70">${gData[gData.length-1].name}</span>.
+                    <h4 class="text-white font-bold text-lg mb-2">Top Performer</h4>
+                    <p class="text-sm text-spotify-subtext leading-relaxed">
+                        <strong class="text-white">${bData[0].name}</strong> generated the highest revenue. Consider applying its strategies to <strong class="text-white">${bData[bData.length-1].name}</strong>.
                     </p>
                 </div>`;
             }
@@ -818,13 +777,13 @@
             const cows = pData.filter(p => p.qty >= avgQty && p.margin < avgMargin).sort((a,b) => b.rev - a.rev);
             if (cows.length > 0) {
                 html += `
-                <div class="p-5 flex flex-col bg-white/5 relative group hover:bg-white/10 transition-colors border-l md:border-l-0 md:border-x border-white/5">
-                    <div class="flex items-center mb-2">
-                        <i data-lucide="alert-triangle" class="w-4 h-4 text-apple-orange mr-2"></i>
-                        <h4 class="text-sm font-semibold text-white">Margin Warning</h4>
+                <div class="sp-card p-6 flex flex-col hover:bg-spotify-highlight transition-colors cursor-pointer">
+                    <div class="w-12 h-12 rounded-full bg-spotify-warning/20 flex items-center justify-center mb-4">
+                        <i data-lucide="alert-triangle" class="w-6 h-6 text-spotify-warning"></i>
                     </div>
-                    <p class="text-xs text-apple-gray leading-relaxed">
-                        <span class="text-white font-medium">${cows[0].name}</span> sells fast but lacks margin. Consider a slight price tweak.
+                    <h4 class="text-white font-bold text-lg mb-2">Margin Squeeze</h4>
+                    <p class="text-sm text-spotify-subtext leading-relaxed">
+                        <strong class="text-white">${cows[0].name}</strong> sells fast but has below-average margins. Consider a slight price increase.
                     </p>
                 </div>`;
             }
@@ -832,13 +791,13 @@
             const opps = pData.filter(p => p.qty < avgQty && p.margin >= avgMargin).sort((a,b) => b.margin - a.margin);
             if (opps.length > 0) {
                 html += `
-                <div class="p-5 flex flex-col bg-white/5 relative group hover:bg-white/10 transition-colors">
-                    <div class="flex items-center mb-2">
-                        <i data-lucide="rocket" class="w-4 h-4 text-apple-purple mr-2"></i>
-                        <h4 class="text-sm font-semibold text-white">Untapped Value</h4>
+                <div class="sp-card p-6 flex flex-col hover:bg-spotify-highlight transition-colors cursor-pointer">
+                    <div class="w-12 h-12 rounded-full bg-spotify-purple/20 flex items-center justify-center mb-4">
+                        <i data-lucide="rocket" class="w-6 h-6 text-[#FF64FF]"></i>
                     </div>
-                    <p class="text-xs text-apple-gray leading-relaxed">
-                        <span class="text-white font-medium">${opps[0].name}</span> has high margins but low volume. Push via bundles or ads.
+                    <h4 class="text-white font-bold text-lg mb-2">Growth Potential</h4>
+                    <p class="text-sm text-spotify-subtext leading-relaxed">
+                        <strong class="text-white">${opps[0].name}</strong> has great margins but low volume. Push via bundles or ads.
                     </p>
                 </div>`;
             }
@@ -847,7 +806,8 @@
             lucide.createIcons();
         };
 
-        // --- Event Listeners & Boot ---
+        // --- Event Listeners & Start ---
+        
         document.getElementById('csvFileInput').addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (!file) return;
@@ -858,14 +818,14 @@
             const label = document.getElementById('uploadLabel');
 
             iconD.classList.add('hidden'); iconL.classList.remove('hidden');
-            txt.innerText = "Uploading..."; label.classList.add('opacity-50', 'pointer-events-none');
+            txt.innerText = "Uploading..."; label.classList.add('opacity-75', 'pointer-events-none');
 
             const reader = new FileReader();
             reader.onload = async (evt) => {
                 const parsedRaw = parseCSVRaw(evt.target.result);
                 if (parsedRaw.length) await uploadToSupabase(parsedRaw);
                 iconD.classList.remove('hidden'); iconL.classList.add('hidden');
-                txt.innerText = "Upload Data"; label.classList.remove('opacity-50', 'pointer-events-none');
+                txt.innerText = "Upload CSV"; label.classList.remove('opacity-75', 'pointer-events-none');
                 e.target.value = ''; 
             };
             reader.readAsText(file);
