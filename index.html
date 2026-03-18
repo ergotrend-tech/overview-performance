@@ -51,17 +51,17 @@
     
     <style>
         body { 
-            background-color: #121212; 
+            background-color: #0E0E0E; 
             color: #FFFFFF;
             font-family: 'Inter', sans-serif;
             -webkit-font-smoothing: antialiased;
         }
         
         /* Spotify Custom Scrollbar */
-        ::-webkit-scrollbar { width: 12px; height: 12px; }
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.3); }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.5); }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 8px; border: 2px solid transparent; background-clip: padding-box; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.4); border: 2px solid transparent; background-clip: padding-box; }
 
         /* Input overrides for dark mode dates */
         input[type="date"]::-webkit-calendar-picker-indicator {
@@ -72,37 +72,66 @@
 
         .hidden { display: none !important; }
         
-        /* Utility class for Spotify cards */
+        /* * PREMIUM GLASSMORPHISM CARDS
+         * Combines Spotify dark palette with glass transparency and glows 
+         */
         .sp-card {
-            background-color: #181818;
-            border-radius: 8px;
-            transition: background-color 0.3s ease;
+            background: rgba(24, 24, 24, 0.65);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
         .sp-card:hover {
-            background-color: #282828;
+            background: rgba(40, 40, 40, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 12px 40px rgba(29, 185, 84, 0.12); /* Subtle Spotify Green Glow */
+            transform: translateY(-2px);
+        }
+
+        /* Glass Filters */
+        .glass-pill {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s ease;
+        }
+        .glass-pill:hover, .glass-pill:focus-within {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.05);
         }
     </style>
 </head>
-<body class="min-h-screen selection:bg-spotify-green selection:text-white">
+<body class="min-h-screen selection:bg-spotify-green selection:text-white relative z-0">
 
-    <!-- Background Gradient Header (Spotify Home style) -->
-    <div class="fixed top-0 left-0 w-full h-80 bg-gradient-to-b from-[#1E3264] to-spotify-base pointer-events-none -z-10"></div>
+    <!-- Ambient Background Glows (Creates the deep translucent feel) -->
+    <div class="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none -z-20">
+        <!-- Top header gradient -->
+        <div class="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-[#1E3264]/60 to-transparent"></div>
+        <!-- Ambient Orbs -->
+        <div class="absolute top-[-10%] left-[-5%] w-[600px] h-[600px] rounded-full bg-spotify-green/10 blur-[120px]"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[700px] h-[700px] rounded-full bg-[#1E3264]/20 blur-[150px]"></div>
+    </div>
 
     <div class="p-4 md:p-6 lg:p-8 max-w-[1600px] mx-auto z-10 relative">
 
         <!-- Header -->
         <div class="flex flex-col md:flex-row justify-between items-end mb-8 pt-4">
             <div>
-                <p class="text-sm font-bold text-spotify-subtext uppercase tracking-widest mb-1">Overview</p>
-                <h1 class="text-4xl md:text-5xl font-extrabold text-white tracking-tight" id="greetingText">Good evening</h1>
+                <p class="text-sm font-bold text-spotify-subtext uppercase tracking-widest mb-1 text-shadow-sm">Overview</p>
+                <h1 class="text-4xl md:text-5xl font-extrabold text-white tracking-tight drop-shadow-md" id="greetingText">Good evening</h1>
             </div>
             <div class="mt-5 md:mt-0 flex items-center space-x-4">
-                <div id="syncStatus" class="text-xs font-medium text-spotify-subtext flex items-center">
-                    <div class="w-2 h-2 rounded-full bg-spotify-green animate-pulse mr-2" id="syncDot"></div>
+                <div id="syncStatus" class="text-xs font-medium text-spotify-subtext flex items-center glass-pill px-3 py-1.5 rounded-full">
+                    <div class="w-2 h-2 rounded-full bg-spotify-green animate-pulse mr-2 shadow-[0_0_8px_rgba(29,185,84,0.8)]" id="syncDot"></div>
                     <span id="syncText">Live Data</span>
                 </div>
-                <!-- Primary Button (Spotify Style) -->
-                <label class="cursor-pointer bg-spotify-green hover:bg-spotify-greenHover text-black px-8 py-3 rounded-full flex items-center transition-all hover:scale-105 active:scale-95 text-sm font-bold" id="uploadLabel">
+                <!-- Primary Glowing Button -->
+                <label class="cursor-pointer bg-spotify-green hover:bg-spotify-greenHover text-black px-8 py-3 rounded-full flex items-center transition-all hover:scale-105 active:scale-95 text-sm font-bold shadow-[0_0_20px_rgba(29,185,84,0.3)] hover:shadow-[0_0_30px_rgba(29,185,84,0.5)]" id="uploadLabel">
                     <i data-lucide="upload" class="w-4 h-4 mr-2" id="uploadIcon"></i>
                     <i data-lucide="loader-2" class="w-4 h-4 mr-2 animate-spin hidden" id="uploadSpinner"></i>
                     <span id="uploadText">Upload CSV</span>
@@ -111,31 +140,31 @@
             </div>
         </div>
 
-        <!-- Filter Bar (Spotify Category Pills) -->
+        <!-- Filter Bar -->
         <div class="mb-8 flex flex-col md:flex-row items-center gap-3">
-            <div class="flex items-center text-spotify-subtext font-bold bg-spotify-highlight/50 px-4 py-2 rounded-full">
-                <i data-lucide="list-filter" class="w-4 h-4 mr-2 text-white"></i> Filters
+            <div class="flex items-center text-white font-bold glass-pill px-5 py-2.5 rounded-full">
+                <i data-lucide="list-filter" class="w-4 h-4 mr-2"></i> Filters
             </div>
             
             <div class="flex flex-wrap gap-3 w-full items-center">
                 <!-- Date Range Pill -->
-                <div class="flex items-center space-x-2 bg-[#2A2A2A] hover:bg-[#333333] transition-colors px-4 py-2 rounded-full cursor-pointer">
+                <div class="flex items-center space-x-2 glass-pill px-5 py-2.5 rounded-full cursor-pointer">
                     <input type="date" id="filterStartDate" class="bg-transparent text-white text-sm border-none focus:ring-0 p-0 outline-none w-[110px]" />
-                    <span class="text-spotify-subtext">to</span>
+                    <span class="text-spotify-subtext px-1">to</span>
                     <input type="date" id="filterEndDate" class="bg-transparent text-white text-sm border-none focus:ring-0 p-0 outline-none w-[110px]" />
                 </div>
 
                 <!-- Channel Filter Pill -->
                 <div class="flex-1 min-w-[160px] md:flex-none">
-                    <select id="filterChannel" class="bg-[#2A2A2A] hover:bg-[#333333] text-white text-sm rounded-full focus:ring-2 focus:ring-white w-full px-5 py-2.5 outline-none appearance-none cursor-pointer transition-colors font-medium">
-                        <option value="All">All Channels</option>
+                    <select id="filterChannel" class="glass-pill text-white text-sm rounded-full focus:ring-2 focus:ring-white/50 w-full px-5 py-2.5 outline-none appearance-none cursor-pointer font-medium">
+                        <option value="All" class="bg-[#181818]">All Channels</option>
                     </select>
                 </div>
 
                 <!-- Product Group Filter Pill -->
                 <div class="flex-1 min-w-[160px] md:flex-none">
-                    <select id="filterGroup" class="bg-[#2A2A2A] hover:bg-[#333333] text-white text-sm rounded-full focus:ring-2 focus:ring-white w-full px-5 py-2.5 outline-none appearance-none cursor-pointer transition-colors font-medium">
-                        <option value="All">All Categories</option>
+                    <select id="filterGroup" class="glass-pill text-white text-sm rounded-full focus:ring-2 focus:ring-white/50 w-full px-5 py-2.5 outline-none appearance-none cursor-pointer font-medium">
+                        <option value="All" class="bg-[#181818]">All Categories</option>
                     </select>
                 </div>
             </div>
@@ -148,35 +177,39 @@
 
         <!-- 1. KPI Row -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-            <div class="sp-card p-6 flex flex-col group cursor-default">
-                <p class="text-sm text-spotify-subtext font-bold mb-2 uppercase tracking-wide group-hover:text-white transition-colors">Total Revenue</p>
-                <h3 class="text-3xl font-extrabold text-white mb-2 truncate" id="kpiRevenue">฿0</h3>
-                <div class="mt-auto pt-4 border-t border-spotify-divider flex items-center text-spotify-green text-sm font-medium">
+            <div class="sp-card p-6 flex flex-col group cursor-default relative overflow-hidden">
+                <div class="absolute -right-6 -top-6 w-24 h-24 bg-white/5 rounded-full blur-2xl group-hover:bg-spotify-green/10 transition-colors"></div>
+                <p class="text-sm text-spotify-subtext font-bold mb-2 uppercase tracking-wide group-hover:text-white transition-colors relative z-10">Total Revenue</p>
+                <h3 class="text-3xl font-extrabold text-white mb-2 truncate drop-shadow-md relative z-10" id="kpiRevenue">฿0</h3>
+                <div class="mt-auto pt-4 border-t border-white/10 flex items-center text-spotify-green text-sm font-medium relative z-10 drop-shadow-[0_0_8px_rgba(29,185,84,0.5)]">
                     <i data-lucide="wallet" class="w-4 h-4 mr-1"></i> Net Sales
                 </div>
             </div>
             
-            <div class="sp-card p-6 flex flex-col group cursor-default">
-                <p class="text-sm text-spotify-subtext font-bold mb-2 uppercase tracking-wide group-hover:text-white transition-colors">Gross Profit</p>
-                <h3 class="text-3xl font-extrabold text-white mb-2 truncate" id="kpiProfit">฿0</h3>
-                <div class="mt-auto pt-4 border-t border-spotify-divider flex justify-between items-center text-sm font-medium">
+            <div class="sp-card p-6 flex flex-col group cursor-default relative overflow-hidden">
+                <div class="absolute -right-6 -top-6 w-24 h-24 bg-white/5 rounded-full blur-2xl group-hover:bg-spotify-green/10 transition-colors"></div>
+                <p class="text-sm text-spotify-subtext font-bold mb-2 uppercase tracking-wide group-hover:text-white transition-colors relative z-10">Gross Profit</p>
+                <h3 class="text-3xl font-extrabold text-white mb-2 truncate drop-shadow-md relative z-10" id="kpiProfit">฿0</h3>
+                <div class="mt-auto pt-4 border-t border-white/10 flex justify-between items-center text-sm font-medium relative z-10">
                     <span class="text-spotify-subtext">Margin</span>
-                    <span class="text-spotify-green bg-spotify-green/10 px-2 py-0.5 rounded-md" id="kpiMargin">0.0%</span>
+                    <span class="text-spotify-green bg-spotify-green/10 border border-spotify-green/20 px-2.5 py-1 rounded-md shadow-[0_0_10px_rgba(29,185,84,0.2)]" id="kpiMargin">0.0%</span>
                 </div>
             </div>
 
-            <div class="sp-card p-6 flex flex-col group cursor-default">
-                <p class="text-sm text-spotify-subtext font-bold mb-2 uppercase tracking-wide group-hover:text-white transition-colors">Units Sold</p>
-                <h3 class="text-3xl font-extrabold text-white mb-2 truncate"><span id="kpiQty">0</span></h3>
-                <div class="mt-auto pt-4 border-t border-spotify-divider flex items-center text-spotify-subtext text-sm font-medium">
+            <div class="sp-card p-6 flex flex-col group cursor-default relative overflow-hidden">
+                <div class="absolute -right-6 -top-6 w-24 h-24 bg-white/5 rounded-full blur-2xl group-hover:bg-white/10 transition-colors"></div>
+                <p class="text-sm text-spotify-subtext font-bold mb-2 uppercase tracking-wide group-hover:text-white transition-colors relative z-10">Units Sold</p>
+                <h3 class="text-3xl font-extrabold text-white mb-2 truncate drop-shadow-md relative z-10"><span id="kpiQty">0</span></h3>
+                <div class="mt-auto pt-4 border-t border-white/10 flex items-center text-spotify-subtext text-sm font-medium relative z-10">
                     <i data-lucide="package" class="w-4 h-4 mr-1"></i> Total pieces
                 </div>
             </div>
 
-            <div class="sp-card p-6 flex flex-col group cursor-default">
-                <p class="text-sm text-spotify-subtext font-bold mb-2 uppercase tracking-wide group-hover:text-white transition-colors">Return Rate</p>
-                <h3 class="text-3xl font-extrabold text-white mb-2 truncate" id="kpiReturn">0.00%</h3>
-                <div class="mt-auto pt-4 border-t border-spotify-divider flex items-center text-spotify-error text-sm font-medium">
+            <div class="sp-card p-6 flex flex-col group cursor-default relative overflow-hidden">
+                <div class="absolute -right-6 -top-6 w-24 h-24 bg-white/5 rounded-full blur-2xl group-hover:bg-spotify-error/10 transition-colors"></div>
+                <p class="text-sm text-spotify-subtext font-bold mb-2 uppercase tracking-wide group-hover:text-white transition-colors relative z-10">Return Rate</p>
+                <h3 class="text-3xl font-extrabold text-white mb-2 truncate drop-shadow-md relative z-10" id="kpiReturn">0.00%</h3>
+                <div class="mt-auto pt-4 border-t border-white/10 flex items-center text-spotify-error text-sm font-medium relative z-10 drop-shadow-[0_0_8px_rgba(226,33,52,0.5)]">
                     <i data-lucide="refresh-ccw" class="w-4 h-4 mr-1"></i> Credit Notes
                 </div>
             </div>
@@ -186,7 +219,7 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
             <!-- Sales Trend -->
             <div class="sp-card p-6 lg:col-span-2">
-                <h3 class="text-lg font-bold text-white mb-6">Revenue & Profit Trend</h3>
+                <h3 class="text-lg font-bold text-white mb-6 drop-shadow-md">Revenue & Profit Trend</h3>
                 <div class="h-[300px] relative w-full">
                     <canvas id="trendChart"></canvas>
                 </div>
@@ -194,7 +227,7 @@
 
             <!-- Branch Productivity -->
             <div class="sp-card p-6 lg:col-span-1">
-                <h3 class="text-lg font-bold text-white mb-2">Channel Performance</h3>
+                <h3 class="text-lg font-bold text-white mb-2 drop-shadow-md">Channel Performance</h3>
                 <p class="text-xs text-spotify-subtext mb-6 font-medium">
                     <i data-lucide="mouse-pointer-click" class="w-3 h-3 inline"></i> Click bar to cross-filter
                 </p>
@@ -210,12 +243,12 @@
             <div class="sp-card p-6 lg:col-span-2 relative flex flex-col">
                 <div class="flex justify-between items-start mb-2">
                     <div>
-                        <h3 class="text-lg font-bold text-white">Efficiency Matrix</h3>
+                        <h3 class="text-lg font-bold text-white drop-shadow-md">Efficiency Matrix</h3>
                         <p class="text-xs text-spotify-subtext mt-1 font-medium">
                             <span class="text-white">Volume (X)</span> vs <span class="text-white">Margin (Y)</span>. Click bubble to filter.
                         </p>
                     </div>
-                    <div class="text-[10px] text-spotify-subtext font-bold bg-spotify-highlight px-3 py-1.5 rounded-full uppercase tracking-wider hidden sm:block">
+                    <div class="text-[10px] text-white font-bold bg-white/10 border border-white/10 backdrop-blur-md px-3 py-1.5 rounded-full uppercase tracking-wider hidden sm:block">
                         Bubble Size = Revenue
                     </div>
                 </div>
@@ -224,22 +257,22 @@
                     <canvas id="scatterChart"></canvas>
                     
                     <!-- Subtle Quadrant Labels -->
-                    <div class="absolute top-2 right-6 text-xs font-bold text-spotify-subtext pointer-events-none z-10">STARS</div>
-                    <div class="absolute bottom-10 right-6 text-xs font-bold text-spotify-subtext pointer-events-none z-10">CASH COWS</div>
-                    <div class="absolute top-2 left-16 text-xs font-bold text-spotify-subtext pointer-events-none z-10">OPPORTUNITIES</div>
-                    <div class="absolute bottom-10 left-16 text-xs font-bold text-spotify-subtext pointer-events-none z-10">CONCERNS</div>
+                    <div class="absolute top-2 right-6 text-xs font-bold text-spotify-subtext/50 pointer-events-none z-10 tracking-widest">STARS</div>
+                    <div class="absolute bottom-10 right-6 text-xs font-bold text-spotify-subtext/50 pointer-events-none z-10 tracking-widest">CASH COWS</div>
+                    <div class="absolute top-2 left-16 text-xs font-bold text-spotify-subtext/50 pointer-events-none z-10 tracking-widest">OPPORTUNITIES</div>
+                    <div class="absolute bottom-10 left-16 text-xs font-bold text-spotify-subtext/50 pointer-events-none z-10 tracking-widest">CONCERNS</div>
                 </div>
             </div>
 
             <!-- Top Sellers List (Tracklist style) -->
             <div class="sp-card p-6 flex flex-col lg:col-span-1 h-full min-h-[450px]">
-                <h3 class="text-lg font-bold text-white mb-2">Top Products</h3>
+                <h3 class="text-lg font-bold text-white mb-2 drop-shadow-md">Top Products</h3>
                 <p class="text-xs text-spotify-subtext mb-4 font-medium">
                     <i data-lucide="mouse-pointer-click" class="w-3 h-3 inline"></i> Select to filter
                 </p>
                 
                 <!-- Header Row -->
-                <div class="flex items-center justify-between px-2 pb-2 border-b border-spotify-divider mb-2">
+                <div class="flex items-center justify-between px-2 pb-2 border-b border-white/10 mb-2">
                     <span class="text-xs text-spotify-subtext font-bold w-6">#</span>
                     <span class="text-xs text-spotify-subtext font-bold flex-1">Title</span>
                     <span class="text-xs text-spotify-subtext font-bold text-right">Revenue</span>
@@ -253,7 +286,7 @@
 
         <!-- 4. Actionable Insights Panel -->
         <div class="mb-10">
-            <h2 class="text-2xl font-bold text-white mb-6">Executive Insights</h2>
+            <h2 class="text-2xl font-bold text-white mb-6 drop-shadow-md">Executive Insights</h2>
             <div id="insightsPanel" class="grid grid-cols-1 md:grid-cols-3 gap-5">
                 <!-- Insights will be injected here via JS -->
             </div>
@@ -273,10 +306,10 @@
         lucide.createIcons();
         Chart.register(window['chartjs-plugin-annotation']);
 
-        // Spotify Chart defaults
+        // Chart defaults matched to glass style
         Chart.defaults.color = '#B3B3B3'; 
         Chart.defaults.font.family = 'Inter, sans-serif';
-        const gridColor = 'rgba(255, 255, 255, 0.05)'; 
+        const gridColor = 'rgba(255, 255, 255, 0.06)'; 
 
         let rawData = [];
         let filteredData = [];
@@ -284,7 +317,7 @@
         let charts = { trend: null, branch: null, scatter: null };
         let activeProductFilter = null;
 
-        // Spotify Palette for Charts
+        // Palette
         const cGreen = '#1DB954', cWhite = '#FFFFFF', cGray = '#B3B3B3';
         const cBlue = '#2E77D0', cOrange = '#FFA42B', cRed = '#E22134', cPurple = '#8C1932';
 
@@ -304,7 +337,7 @@
         const formatCurr = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'THB', minimumFractionDigits: 0 }).format(val);
         const formatNum = (val) => new Intl.NumberFormat('en-US').format(val);
 
-        // Dynamic Greeting based on time
+        // Dynamic Greeting
         const hour = new Date().getHours();
         const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
         document.getElementById('greetingText').innerText = greeting;
@@ -314,13 +347,13 @@
             const dot = document.getElementById('syncDot');
             const txt = document.getElementById('syncText');
             if(status === 'loading') {
-                dot.className = "w-2 h-2 rounded-full bg-spotify-warning animate-pulse mr-2";
+                dot.className = "w-2 h-2 rounded-full bg-spotify-warning animate-pulse mr-2 shadow-[0_0_8px_rgba(255,164,43,0.8)]";
                 txt.innerText = text || "Syncing...";
             } else if (status === 'error') {
-                dot.className = "w-2 h-2 rounded-full bg-spotify-error mr-2";
+                dot.className = "w-2 h-2 rounded-full bg-spotify-error mr-2 shadow-[0_0_8px_rgba(226,33,52,0.8)]";
                 txt.innerText = text || "Offline";
             } else {
-                dot.className = "w-2 h-2 rounded-full bg-spotify-green mr-2";
+                dot.className = "w-2 h-2 rounded-full bg-spotify-green mr-2 shadow-[0_0_8px_rgba(29,185,84,0.8)]";
                 txt.innerText = text || "Live Data";
             }
         }
@@ -511,8 +544,8 @@
             const channels = ['All', ...Array.from(new Set(rawData.map(d => d.SaleChannelName))).filter(Boolean).sort()];
             const groups = ['All', ...Array.from(new Set(rawData.map(d => d.ProductGroup))).filter(Boolean).sort()];
             
-            elFilters.channel.innerHTML = channels.map(c => `<option value="${c}">${c === 'All' ? 'All Channels' : c}</option>`).join('');
-            elFilters.group.innerHTML = groups.map(g => `<option value="${g}">${g === 'All' ? 'All Categories' : g}</option>`).join('');
+            elFilters.channel.innerHTML = channels.map(c => `<option value="${c}" class="bg-[#181818]">${c === 'All' ? 'All Channels' : c}</option>`).join('');
+            elFilters.group.innerHTML = groups.map(g => `<option value="${g}" class="bg-[#181818]">${g === 'All' ? 'All Categories' : g}</option>`).join('');
 
             const dates = rawData.map(d => d.InvDate).filter(Boolean).sort();
             if (dates.length > 0) {
@@ -526,7 +559,7 @@
             let html = '';
             if (activeProductFilter) {
                 html += `
-                <span class="bg-white text-black font-bold text-sm px-4 py-1.5 rounded-full flex items-center cursor-pointer hover:bg-gray-200 transition-colors" onclick="toggleProductFilter(null)">
+                <span class="bg-white/20 text-white border border-white/30 backdrop-blur-md shadow-lg font-bold text-sm px-4 py-1.5 rounded-full flex items-center cursor-pointer hover:bg-white/30 transition-colors" onclick="toggleProductFilter(null)">
                     ${activeProductFilter} 
                     <i data-lucide="x" class="w-3 h-3 ml-2"></i>
                 </span>`;
@@ -618,17 +651,18 @@
             sorted.forEach((p, idx) => {
                 const isSelected = activeProductFilter === p.name;
                 const txtColor = isSelected ? 'text-spotify-green' : 'text-white group-hover:text-spotify-green';
+                const bgState = isSelected ? 'bg-white/10 border border-white/20 shadow-[0_0_15px_rgba(29,185,84,0.15)]' : 'border border-transparent hover:bg-white/5 hover:border-white/10';
                 
                 html += `
-                <div class="flex items-center justify-between p-2 rounded-md hover:bg-white/10 group cursor-pointer transition-colors ${isSelected ? 'bg-white/5' : ''}" onclick="toggleProductFilter('${p.name.replace(/'/g, "\\'")}')">
+                <div class="flex items-center justify-between p-2 rounded-lg cursor-pointer transition-all group ${bgState}" onclick="toggleProductFilter('${p.name.replace(/'/g, "\\'")}')">
                     <div class="flex items-center gap-4 overflow-hidden pr-2">
-                        <span class="text-spotify-subtext w-4 text-right font-medium text-sm">${idx+1}</span>
+                        <span class="text-spotify-subtext w-4 text-right font-medium text-sm group-hover:text-white transition-colors">${idx+1}</span>
                         <div class="flex flex-col truncate">
-                            <span class="${txtColor} font-bold text-sm truncate" title="${p.name}">${p.name}</span>
+                            <span class="${txtColor} font-bold text-sm truncate drop-shadow-sm transition-colors" title="${p.name}">${p.name}</span>
                             <span class="text-spotify-subtext text-xs truncate">${p.group}</span>
                         </div>
                     </div>
-                    <span class="text-spotify-subtext text-sm font-medium whitespace-nowrap">${formatCurr(p.rev)}</span>
+                    <span class="text-spotify-subtext group-hover:text-white text-sm font-medium whitespace-nowrap transition-colors">${formatCurr(p.rev)}</span>
                 </div>`;
             });
             
@@ -637,8 +671,9 @@
 
         // --- Charts ---
         const tooltipConfig = {
-            backgroundColor: '#282828', titleColor: '#FFFFFF', bodyColor: '#B3B3B3', borderColor: '#121212',
-            borderWidth: 0, padding: 12, cornerRadius: 8, usePointStyle: true,
+            backgroundColor: 'rgba(24, 24, 24, 0.9)', 
+            titleColor: '#FFFFFF', bodyColor: '#B3B3B3', borderColor: 'rgba(255,255,255,0.1)',
+            borderWidth: 1, padding: 12, cornerRadius: 10, usePointStyle: true,
             titleFont: { size: 14, weight: 'bold', family: 'Inter' }, bodyFont: { size: 13, family: 'Inter' }
         };
 
@@ -713,9 +748,9 @@
                 else if (d.qty < avgQty && d.margin >= avgMargin) color = cBlue; // Opps
                 else color = cRed; // Concerns
                 
-                if (activeProductFilter && d.name !== activeProductFilter) color = '#333333';
+                if (activeProductFilter && d.name !== activeProductFilter) color = 'rgba(255,255,255,0.1)';
 
-                return { x: d.qty, y: d.margin, r: Math.max((d.rev / maxRev) * 20, 6), rawRev: d.rev, name: d.name, bgColor: color };
+                return { x: d.qty, y: d.margin, r: Math.max((d.rev / maxRev) * 25, 6), rawRev: d.rev, name: d.name, bgColor: color };
             });
 
             charts.scatter = new Chart(sCtx, {
@@ -723,9 +758,10 @@
                 data: {
                     datasets: [{
                         data: bubbleData,
-                        backgroundColor: bubbleData.map(d => d.bgColor + 'E6'), // 90% opacity
-                        borderColor: bubbleData.map(d => d.bgColor), borderWidth: 1,
-                        hoverBackgroundColor: bubbleData.map(d => d.bgColor),
+                        backgroundColor: bubbleData.map(d => d.bgColor.startsWith('rgba') ? d.bgColor : d.bgColor + 'CC'), // 80% opacity
+                        borderColor: bubbleData.map(d => d.bgColor.startsWith('rgba') ? 'transparent' : cWhite), 
+                        borderWidth: bubbleData.map(d => d.bgColor.startsWith('rgba') ? 0 : 1),
+                        hoverBackgroundColor: bubbleData.map(d => d.bgColor.startsWith('rgba') ? d.bgColor : d.bgColor),
                     }]
                 },
                 options: {
@@ -746,8 +782,8 @@
                         tooltip: { ...tooltipConfig, callbacks: { label: c => { const d = c.raw; return [d.name, `Revenue: ${formatCurr(d.rawRev)}`, `Volume: ${formatNum(d.x)} units`, `Margin: ${d.y.toFixed(1)}%`]; } } },
                         annotation: {
                             annotations: {
-                                lineX: { type: 'line', xMin: avgQty, xMax: avgQty, borderColor: '#333333', borderWidth: 2, borderDash: [6, 6] },
-                                lineY: { type: 'line', yMin: avgMargin, yMax: avgMargin, borderColor: '#333333', borderWidth: 2, borderDash: [6, 6] }
+                                lineX: { type: 'line', xMin: avgQty, xMax: avgQty, borderColor: 'rgba(255,255,255,0.15)', borderWidth: 2, borderDash: [6, 6] },
+                                lineY: { type: 'line', yMin: avgMargin, yMax: avgMargin, borderColor: 'rgba(255,255,255,0.15)', borderWidth: 2, borderDash: [6, 6] }
                             }
                         }
                     }
@@ -763,11 +799,11 @@
             
             if (bData.length > 1) {
                 html += `
-                <div class="sp-card p-6 flex flex-col hover:bg-spotify-highlight transition-colors cursor-pointer">
-                    <div class="w-12 h-12 rounded-full bg-spotify-info/20 flex items-center justify-center mb-4">
+                <div class="sp-card p-6 flex flex-col cursor-pointer border border-transparent hover:border-spotify-info/30 hover:shadow-[0_0_20px_rgba(46,119,208,0.15)] transition-all">
+                    <div class="w-12 h-12 rounded-full bg-spotify-info/20 flex items-center justify-center mb-4 shadow-[0_0_15px_rgba(46,119,208,0.3)] border border-spotify-info/30">
                         <i data-lucide="store" class="w-6 h-6 text-spotify-info"></i>
                     </div>
-                    <h4 class="text-white font-bold text-lg mb-2">Top Performer</h4>
+                    <h4 class="text-white font-bold text-lg mb-2 drop-shadow-md">Top Performer</h4>
                     <p class="text-sm text-spotify-subtext leading-relaxed">
                         <strong class="text-white">${bData[0].name}</strong> generated the highest revenue. Consider applying its strategies to <strong class="text-white">${bData[bData.length-1].name}</strong>.
                     </p>
@@ -777,11 +813,11 @@
             const cows = pData.filter(p => p.qty >= avgQty && p.margin < avgMargin).sort((a,b) => b.rev - a.rev);
             if (cows.length > 0) {
                 html += `
-                <div class="sp-card p-6 flex flex-col hover:bg-spotify-highlight transition-colors cursor-pointer">
-                    <div class="w-12 h-12 rounded-full bg-spotify-warning/20 flex items-center justify-center mb-4">
+                <div class="sp-card p-6 flex flex-col cursor-pointer border border-transparent hover:border-spotify-warning/30 hover:shadow-[0_0_20px_rgba(255,164,43,0.15)] transition-all">
+                    <div class="w-12 h-12 rounded-full bg-spotify-warning/20 flex items-center justify-center mb-4 shadow-[0_0_15px_rgba(255,164,43,0.3)] border border-spotify-warning/30">
                         <i data-lucide="alert-triangle" class="w-6 h-6 text-spotify-warning"></i>
                     </div>
-                    <h4 class="text-white font-bold text-lg mb-2">Margin Squeeze</h4>
+                    <h4 class="text-white font-bold text-lg mb-2 drop-shadow-md">Margin Squeeze</h4>
                     <p class="text-sm text-spotify-subtext leading-relaxed">
                         <strong class="text-white">${cows[0].name}</strong> sells fast but has below-average margins. Consider a slight price increase.
                     </p>
@@ -791,11 +827,11 @@
             const opps = pData.filter(p => p.qty < avgQty && p.margin >= avgMargin).sort((a,b) => b.margin - a.margin);
             if (opps.length > 0) {
                 html += `
-                <div class="sp-card p-6 flex flex-col hover:bg-spotify-highlight transition-colors cursor-pointer">
-                    <div class="w-12 h-12 rounded-full bg-spotify-purple/20 flex items-center justify-center mb-4">
+                <div class="sp-card p-6 flex flex-col cursor-pointer border border-transparent hover:border-spotify-purple/30 hover:shadow-[0_0_20px_rgba(140,25,50,0.4)] transition-all">
+                    <div class="w-12 h-12 rounded-full bg-spotify-purple/40 flex items-center justify-center mb-4 shadow-[0_0_15px_rgba(140,25,50,0.5)] border border-spotify-purple">
                         <i data-lucide="rocket" class="w-6 h-6 text-[#FF64FF]"></i>
                     </div>
-                    <h4 class="text-white font-bold text-lg mb-2">Growth Potential</h4>
+                    <h4 class="text-white font-bold text-lg mb-2 drop-shadow-md">Growth Potential</h4>
                     <p class="text-sm text-spotify-subtext leading-relaxed">
                         <strong class="text-white">${opps[0].name}</strong> has great margins but low volume. Push via bundles or ads.
                     </p>
