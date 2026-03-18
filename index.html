@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="th" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sales & Productivity Dashboard</title>
+    <title>Sales Intelligence</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -13,21 +13,22 @@
             theme: {
                 extend: {
                     colors: {
-                        slate: {
-                            750: '#293548',
-                            850: '#152033',
-                            950: '#0B1120',
-                        },
-                        friendly: {
-                            blue: '#60A5FA',
-                            green: '#34D399',
-                            orange: '#FBBF24',
-                            purple: '#A78BFA',
-                            rose: '#FB7185'
+                        apple: {
+                            bg: '#000000',
+                            glass: 'rgba(30, 30, 32, 0.65)',
+                            glassHover: 'rgba(44, 44, 46, 0.8)',
+                            border: 'rgba(255, 255, 255, 0.12)',
+                            blue: '#0A84FF',
+                            green: '#30D158',
+                            orange: '#FF9F0A',
+                            red: '#FF453A',
+                            purple: '#BF5AF2',
+                            gray: '#8E8E93',
+                            grayDark: '#1C1C1E'
                         }
                     },
                     fontFamily: {
-                        sans: ['Nunito', 'ui-sans-serif', 'system-ui', 'sans-serif'], 
+                        sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Text"', '"Segoe UI"', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'], 
                     }
                 }
             }
@@ -43,246 +44,227 @@
     
     <style>
         body { 
-            background-color: #0F172A; 
-            color: #F8FAFC;
+            background-color: var(--apple-bg); 
+            color: #F5F5F7;
+            /* Subtle macOS Sonoma style background orbs */
+            background-image: 
+                radial-gradient(circle at 15% 0%, rgba(10, 132, 255, 0.15), transparent 30%),
+                radial-gradient(circle at 85% 100%, rgba(191, 90, 242, 0.12), transparent 30%);
+            background-attachment: fixed;
+            -webkit-font-smoothing: antialiased;
         }
         
-        /* Custom Soft Scrollbar */
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #475569; }
+        .glass-panel {
+            background: rgba(28, 28, 30, 0.5);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+        }
 
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        .glass-button {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Apple-like Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; border: 2px solid #0F172A; }
-        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
 
         input[type="date"]::-webkit-calendar-picker-indicator {
-            filter: invert(0.8) sepia(1) hue-rotate(180deg) saturate(200%);
-            opacity: 0.6;
+            filter: invert(1);
+            opacity: 0.5;
             cursor: pointer;
         }
 
+        /* Smooth Detail Accordion */
+        details > summary { list-style: none; }
+        details > summary::-webkit-details-marker { display: none; }
+        
         .hidden { display: none !important; }
     </style>
 </head>
-<body class="min-h-screen p-4 md:p-6 lg:p-8 selection:bg-friendly-blue selection:text-white">
+<body class="min-h-screen p-4 md:p-6 lg:p-8">
 
-    <!-- Header -->
-    <div class="flex flex-col md:flex-row justify-between items-center bg-slate-800 p-6 rounded-[2rem] shadow-sm border border-slate-700 mb-6">
+    <!-- Supabase Config (Hidden Modal) -->
+    <div id="supabaseModal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50 backdrop-blur-md p-4">
+        <!-- Kept hidden as requested -->
+    </div>
+
+    <!-- Header (macOS style) -->
+    <div class="flex flex-col md:flex-row justify-between items-center glass-panel p-5 rounded-[2rem] mb-6">
         <div class="flex items-center space-x-4">
-            <div class="bg-gradient-to-br from-friendly-blue to-friendly-purple p-3 rounded-2xl shadow-lg">
-                <i data-lucide="layout-dashboard" class="w-7 h-7 text-white"></i>
+            <div class="bg-gradient-to-b from-apple-blue to-blue-700 p-3 rounded-2xl shadow-lg">
+                <i data-lucide="bar-chart-2" class="w-6 h-6 text-white"></i>
             </div>
             <div>
-                <h1 class="text-2xl font-bold text-white">Sales Dashboard 👋</h1>
-                <p class="text-sm text-slate-400 mt-0.5">Interactive overview of sales and product efficiency</p>
+                <h1 class="text-xl font-bold text-white tracking-tight">Sales Intelligence</h1>
+                <p class="text-xs text-apple-gray mt-0.5">Interactive Executive Overview</p>
             </div>
         </div>
-        <div class="mt-5 md:mt-0 flex items-center space-x-3">
-            <div id="syncStatus" class="text-sm font-medium text-slate-400 flex items-center mr-2">
-                <div class="w-2 h-2 rounded-full bg-friendly-green animate-pulse mr-2" id="syncDot"></div>
-                <span id="syncText">Live Data</span>
+        <div class="mt-4 md:mt-0 flex items-center space-x-3">
+            <div id="syncStatus" class="text-xs font-medium text-apple-gray flex items-center bg-white/5 px-3 py-1.5 rounded-full border border-white/10">
+                <div class="w-2 h-2 rounded-full bg-apple-gray mr-2" id="syncDot"></div>
+                <span id="syncText">Connecting...</span>
             </div>
-            <label class="cursor-pointer bg-friendly-blue hover:bg-blue-400 text-slate-900 px-5 py-2.5 rounded-full flex items-center transition-all hover:scale-105 active:scale-95 text-sm font-bold shadow-lg shadow-blue-500/20" id="uploadLabel">
-                <i data-lucide="upload-cloud" class="w-4 h-4 mr-2" id="uploadIcon"></i>
+            <label class="cursor-pointer bg-apple-blue hover:bg-blue-500 text-white px-5 py-2 rounded-full flex items-center transition-all text-sm font-medium shadow-lg shadow-blue-500/20" id="uploadLabel">
+                <i data-lucide="icloud" class="w-4 h-4 mr-2" id="uploadIcon"></i>
                 <i data-lucide="loader-2" class="w-4 h-4 mr-2 animate-spin hidden" id="uploadSpinner"></i>
-                <span id="uploadText">Upload to DB</span>
+                <span id="uploadText">Upload Data</span>
                 <input type="file" accept=".csv" class="hidden" id="csvFileInput" />
             </label>
         </div>
     </div>
 
-    <!-- Filter Bar -->
-    <div class="bg-slate-800/50 p-4 md:p-5 rounded-[2rem] border border-slate-700/50 mb-6 flex flex-col items-start space-y-4">
-        <div class="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6 w-full">
-            <div class="flex items-center text-slate-300 font-medium whitespace-nowrap bg-slate-800 px-4 py-2 rounded-full border border-slate-700">
-                <i data-lucide="filter" class="w-4 h-4 mr-2 text-friendly-blue"></i> Main Filters
-            </div>
-            
-            <div class="flex flex-wrap gap-3 w-full items-center">
-                <!-- Date Range -->
-                <div class="flex items-center space-x-2 bg-slate-800 px-4 py-2 rounded-full border border-slate-700 w-full md:w-auto">
-                    <input type="date" id="filterStartDate" class="bg-transparent text-slate-200 text-sm border-none focus:ring-0 p-0 outline-none w-[110px]" />
-                    <span class="text-slate-500 mx-1">To</span>
-                    <input type="date" id="filterEndDate" class="bg-transparent text-slate-200 text-sm border-none focus:ring-0 p-0 outline-none w-[110px]" />
-                </div>
-
-                <!-- Channel Filter -->
-                <div class="flex-1 min-w-[160px]">
-                    <select id="filterChannel" class="bg-slate-800 border border-slate-700 text-slate-200 text-sm rounded-full focus:ring-2 focus:ring-friendly-blue w-full px-4 py-2.5 outline-none appearance-none cursor-pointer">
-                        <option value="All">All Channels</option>
-                    </select>
-                </div>
-
-                <!-- Product Group Filter -->
-                <div class="flex-1 min-w-[160px]">
-                    <select id="filterGroup" class="bg-slate-800 border border-slate-700 text-slate-200 text-sm rounded-full focus:ring-2 focus:ring-friendly-blue w-full px-4 py-2.5 outline-none appearance-none cursor-pointer">
-                        <option value="All">All Categories</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-
-        <!-- Cross Filter Indicators (Dynamic) -->
-        <div id="activeCrossFilters" class="flex flex-wrap gap-2 w-full empty:hidden">
-            <!-- Injected via JS -->
-        </div>
-    </div>
-
-    <!-- 1. KPI Row -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
-        <div class="bg-slate-800 rounded-[1.5rem] p-5 border border-slate-700 flex flex-col hover:-translate-y-1 transition-transform duration-300">
-            <div class="flex justify-between items-start mb-2">
-                <div class="p-2.5 bg-friendly-blue/10 text-friendly-blue rounded-full">
-                    <i data-lucide="wallet" class="w-5 h-5"></i>
-                </div>
-            </div>
-            <div>
-                <p class="text-sm text-slate-400 font-medium mb-1">Total Revenue</p>
-                <h3 class="text-2xl font-bold text-white" id="kpiRevenue">$0</h3>
-            </div>
+    <!-- Filter Bar (iOS Segmented Control Style) -->
+    <div class="glass-panel p-4 rounded-[2rem] mb-6 flex flex-col md:flex-row items-center gap-4">
+        <div class="flex items-center text-white text-sm font-medium bg-white/10 px-4 py-2 rounded-full">
+            <i data-lucide="sliders-horizontal" class="w-4 h-4 mr-2"></i> Filters
         </div>
         
-        <div class="bg-slate-800 rounded-[1.5rem] p-5 border border-slate-700 flex flex-col hover:-translate-y-1 transition-transform duration-300">
-            <div class="flex justify-between items-start mb-2">
-                <div class="p-2.5 bg-friendly-green/10 text-friendly-green rounded-full">
-                    <i data-lucide="trending-up" class="w-5 h-5"></i>
-                </div>
-                <div class="bg-friendly-green/10 text-friendly-green px-2.5 py-1 rounded-full text-xs font-bold flex items-center border border-friendly-green/20">
-                    <i data-lucide="percent" class="w-3 h-3 mr-1"></i> <span id="kpiMargin">0.0%</span>
-                </div>
+        <div class="flex flex-wrap gap-3 w-full items-center">
+            <!-- Date Range -->
+            <div class="flex items-center space-x-2 bg-black/30 px-4 py-1.5 rounded-full border border-white/10">
+                <input type="date" id="filterStartDate" class="bg-transparent text-white text-sm border-none focus:ring-0 p-0 outline-none w-[110px]" />
+                <i data-lucide="arrow-right" class="w-3 h-3 text-apple-gray"></i>
+                <input type="date" id="filterEndDate" class="bg-transparent text-white text-sm border-none focus:ring-0 p-0 outline-none w-[110px]" />
             </div>
-            <div>
-                <p class="text-sm text-slate-400 font-medium mb-1">Gross Profit</p>
-                <h3 class="text-2xl font-bold text-white" id="kpiProfit">$0</h3>
+
+            <!-- Channel Filter -->
+            <div class="flex-1 min-w-[140px]">
+                <select id="filterChannel" class="bg-black/30 border border-white/10 text-white text-sm rounded-full focus:ring-1 focus:ring-apple-blue w-full px-4 py-2 outline-none appearance-none cursor-pointer">
+                    <option value="All">All Channels</option>
+                </select>
+            </div>
+
+            <!-- Product Group Filter -->
+            <div class="flex-1 min-w-[140px]">
+                <select id="filterGroup" class="bg-black/30 border border-white/10 text-white text-sm rounded-full focus:ring-1 focus:ring-apple-blue w-full px-4 py-2 outline-none appearance-none cursor-pointer">
+                    <option value="All">All Categories</option>
+                </select>
             </div>
         </div>
 
-        <div class="bg-slate-800 rounded-[1.5rem] p-5 border border-slate-700 flex flex-col hover:-translate-y-1 transition-transform duration-300">
-            <div class="flex justify-between items-start mb-2">
-                <div class="p-2.5 bg-friendly-purple/10 text-friendly-purple rounded-full">
-                    <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+        <!-- Cross Filter Indicators -->
+        <div id="activeCrossFilters" class="flex flex-wrap gap-2 w-full md:w-auto empty:hidden"></div>
+    </div>
+
+    <!-- 1. KPI Row (iOS Widget Style) -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+        <div class="glass-panel p-5 rounded-[1.5rem] flex flex-col justify-between relative overflow-hidden group">
+            <div class="flex justify-between items-start mb-4">
+                <p class="text-sm text-apple-gray font-medium">Net Revenue</p>
+                <div class="p-2 bg-apple-blue/20 text-apple-blue rounded-full"><i data-lucide="banknote" class="w-4 h-4"></i></div>
+            </div>
+            <h3 class="text-3xl font-bold text-white tracking-tight" id="kpiRevenue">$0</h3>
+        </div>
+        
+        <div class="glass-panel p-5 rounded-[1.5rem] flex flex-col justify-between relative overflow-hidden group">
+            <div class="flex justify-between items-start mb-4">
+                <p class="text-sm text-apple-gray font-medium">Gross Profit</p>
+                <div class="flex items-center space-x-2">
+                    <span class="text-xs font-bold text-apple-green bg-apple-green/20 px-2 py-0.5 rounded-full" id="kpiMargin">0.0%</span>
+                    <div class="p-2 bg-apple-green/20 text-apple-green rounded-full"><i data-lucide="pie-chart" class="w-4 h-4"></i></div>
                 </div>
             </div>
-            <div>
-                <p class="text-sm text-slate-400 font-medium mb-1">Units Sold</p>
-                <h3 class="text-2xl font-bold text-white"><span id="kpiQty">0</span> <span class="text-base font-normal text-slate-500">units</span></h3>
-            </div>
+            <h3 class="text-3xl font-bold text-white tracking-tight" id="kpiProfit">$0</h3>
         </div>
 
-        <div class="bg-slate-800 rounded-[1.5rem] p-5 border border-slate-700 flex flex-col hover:-translate-y-1 transition-transform duration-300">
-            <div class="flex justify-between items-start mb-2">
-                <div class="p-2.5 bg-friendly-rose/10 text-friendly-rose rounded-full">
-                    <i data-lucide="corner-down-left" class="w-5 h-5"></i>
-                </div>
+        <div class="glass-panel p-5 rounded-[1.5rem] flex flex-col justify-between relative overflow-hidden group">
+            <div class="flex justify-between items-start mb-4">
+                <p class="text-sm text-apple-gray font-medium">Units Sold</p>
+                <div class="p-2 bg-apple-purple/20 text-apple-purple rounded-full"><i data-lucide="layers" class="w-4 h-4"></i></div>
             </div>
-            <div>
-                <p class="text-sm text-slate-400 font-medium mb-1">Return Rate</p>
-                <h3 class="text-2xl font-bold text-white" id="kpiReturn">0.00%</h3>
+            <h3 class="text-3xl font-bold text-white tracking-tight"><span id="kpiQty">0</span> <span class="text-lg font-normal text-apple-gray">pcs</span></h3>
+        </div>
+
+        <div class="glass-panel p-5 rounded-[1.5rem] flex flex-col justify-between relative overflow-hidden group">
+            <div class="flex justify-between items-start mb-4">
+                <p class="text-sm text-apple-gray font-medium">Return Rate</p>
+                <div class="p-2 bg-apple-red/20 text-apple-red rounded-full"><i data-lucide="arrow-down-left" class="w-4 h-4"></i></div>
             </div>
+            <h3 class="text-3xl font-bold text-white tracking-tight" id="kpiReturn">0.00%</h3>
         </div>
     </div>
 
-    <!-- 2. Trends & Branch Productivity -->
+    <!-- 2. Trends & Channel Hierarchy -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         <!-- Sales Trend -->
-        <div class="bg-slate-800 rounded-[1.5rem] p-6 border border-slate-700 lg:col-span-2">
-            <h3 class="text-base font-bold text-white mb-6 flex items-center">
-                <div class="w-2 h-6 bg-friendly-blue rounded-full mr-3"></div>
-                Revenue & Profit Trend
+        <div class="glass-panel p-6 rounded-[1.5rem] lg:col-span-2 flex flex-col">
+            <h3 class="text-base font-semibold text-white mb-6 flex items-center">
+                <div class="w-1.5 h-5 bg-apple-blue rounded-full mr-2"></div> Revenue & Profit Trend
             </h3>
-            <div class="h-[280px] relative w-full">
+            <div class="flex-1 min-h-[250px] relative w-full">
                 <canvas id="trendChart"></canvas>
             </div>
         </div>
 
-        <!-- Branch Productivity -->
-        <div class="bg-slate-800 rounded-[1.5rem] p-6 border border-slate-700 lg:col-span-1">
-            <h3 class="text-base font-bold text-white mb-2 flex items-center justify-between">
-                <div class="flex items-center">
-                    <div class="w-2 h-6 bg-friendly-orange rounded-full mr-3"></div>
-                    Channel Performance
-                </div>
-            </h3>
-            <p class="text-xs text-slate-400 mb-4 font-light">
-                <i data-lucide="mouse-pointer-click" class="w-3 h-3 inline"></i> Click bar to cross-filter
-            </p>
-            <div class="h-[250px] relative w-full">
-                <canvas id="branchChart"></canvas>
-            </div>
-        </div>
-    </div>
-
-    <!-- 3. Efficiency & Top Sellers -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <!-- Product Efficiency Scatter -->
-        <div class="bg-slate-800 rounded-[1.5rem] p-6 border border-slate-700 lg:col-span-2 relative flex flex-col">
-            <div class="flex justify-between items-center mb-1">
-                <h3 class="text-base font-bold text-white flex items-center">
-                    <div class="w-2 h-6 bg-friendly-purple rounded-full mr-3"></div>
-                    Product Efficiency Matrix
+        <!-- NEW: Channel Groups & Sub-channels (iOS Settings Style) -->
+        <div class="glass-panel p-6 rounded-[1.5rem] lg:col-span-1 flex flex-col max-h-[350px]">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-base font-semibold text-white flex items-center">
+                    <div class="w-1.5 h-5 bg-apple-orange rounded-full mr-2"></div> Channel Breakdown
                 </h3>
-                <div class="text-[10px] text-slate-400 font-medium bg-slate-900 px-3 py-1.5 rounded-full border border-slate-700 hidden sm:block">
-                    Bubble Size = Revenue Vol.
-                </div>
+                <i data-lucide="info" class="w-4 h-4 text-apple-gray" title="Click to expand/filter"></i>
             </div>
-            <p class="text-xs text-slate-400 mb-6 font-light pl-5">
-                Mapping <span class="text-friendly-blue font-medium">Sales Volume</span> vs. <span class="text-friendly-green font-medium">Profit Margin</span> 
-                <span class="ml-2 bg-slate-700/50 px-2 py-0.5 rounded-md"><i data-lucide="mouse-pointer-click" class="w-3 h-3 inline"></i> Click bubble to drill down</span>
-            </p>
-            <div class="flex-1 min-h-[300px] h-[300px] relative w-full">
-                <canvas id="scatterChart"></canvas>
-                
-                <div class="absolute top-2 right-6 text-[10px] font-bold text-friendly-green bg-friendly-green/10 px-2.5 py-1 rounded-full pointer-events-none z-10 flex items-center">
-                    <i data-lucide="star" class="w-3 h-3 mr-1"></i> Stars
-                </div>
-                <div class="absolute bottom-10 right-6 text-[10px] font-bold text-friendly-orange bg-friendly-orange/10 px-2.5 py-1 rounded-full pointer-events-none z-10 flex items-center">
-                    <i data-lucide="coins" class="w-3 h-3 mr-1"></i> Cash Cows
-                </div>
-                <div class="absolute top-2 left-16 text-[10px] font-bold text-friendly-blue bg-friendly-blue/10 px-2.5 py-1 rounded-full pointer-events-none z-10 flex items-center">
-                    <i data-lucide="trending-up" class="w-3 h-3 mr-1"></i> Opportunities
-                </div>
-                <div class="absolute bottom-10 left-16 text-[10px] font-bold text-friendly-rose bg-friendly-rose/10 px-2.5 py-1 rounded-full pointer-events-none z-10 flex items-center">
-                    <i data-lucide="alert-triangle" class="w-3 h-3 mr-1"></i> Concerns
-                </div>
-            </div>
-        </div>
-
-        <!-- Top Sellers List -->
-        <div class="bg-slate-800 rounded-[1.5rem] p-6 border border-slate-700 flex flex-col lg:col-span-1 h-full min-h-[400px]">
-            <h3 class="text-base font-bold text-white mb-2 flex items-center justify-between">
-                <div class="flex items-center">
-                    <div class="w-2 h-6 bg-friendly-green rounded-full mr-3"></div>
-                    Top Sellers
-                </div>
-            </h3>
-            <p class="text-xs text-slate-400 mb-4 font-light">
-                <i data-lucide="mouse-pointer-click" class="w-3 h-3 inline"></i> Click item to cross-filter
-            </p>
-            <div id="topSellersList" class="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
+            
+            <!-- Hierarchy List Container -->
+            <div id="channelHierarchyList" class="flex-1 overflow-y-auto pr-2 space-y-3">
                 <!-- Injected via JS -->
             </div>
         </div>
     </div>
 
-    <!-- 4. Actionable Insights Panel -->
-    <div class="bg-slate-800 rounded-[1.5rem] border border-slate-700 flex flex-col overflow-hidden mb-6">
-        <div class="bg-slate-750/30 p-5 border-b border-slate-700 flex items-center justify-between">
-            <h3 class="text-base font-bold text-white flex items-center">
-                <i data-lucide="sparkles" class="w-5 h-5 mr-2 text-friendly-orange"></i> 
-                AI Executive Insights
-            </h3>
+    <!-- 3. Efficiency Matrix & Top Sellers -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <!-- Product Efficiency Scatter -->
+        <div class="glass-panel p-6 rounded-[1.5rem] lg:col-span-2 flex flex-col">
+            <div class="flex justify-between items-center mb-2">
+                <h3 class="text-base font-semibold text-white flex items-center">
+                    <div class="w-1.5 h-5 bg-apple-purple rounded-full mr-2"></div> Product Efficiency
+                </h3>
+                <span class="text-[10px] text-apple-gray bg-white/5 px-2 py-1 rounded-md border border-white/10">Bubble = Revenue</span>
+            </div>
+            <div class="flex-1 min-h-[300px] h-[300px] relative w-full mt-2">
+                <canvas id="scatterChart"></canvas>
+                
+                <!-- Quadrant Info -->
+                <div class="absolute top-2 right-4 text-[10px] font-semibold text-apple-green bg-apple-green/10 px-2 py-0.5 rounded-full pointer-events-none z-10 flex items-center border border-apple-green/20 backdrop-blur-md">Stars</div>
+                <div class="absolute bottom-10 right-4 text-[10px] font-semibold text-apple-orange bg-apple-orange/10 px-2 py-0.5 rounded-full pointer-events-none z-10 flex items-center border border-apple-orange/20 backdrop-blur-md">Cash Cows</div>
+                <div class="absolute top-2 left-12 text-[10px] font-semibold text-apple-blue bg-apple-blue/10 px-2 py-0.5 rounded-full pointer-events-none z-10 flex items-center border border-apple-blue/20 backdrop-blur-md">Opportunities</div>
+                <div class="absolute bottom-10 left-12 text-[10px] font-semibold text-apple-red bg-apple-red/10 px-2 py-0.5 rounded-full pointer-events-none z-10 flex items-center border border-apple-red/20 backdrop-blur-md">Concerns</div>
+            </div>
         </div>
-        <div id="insightsPanel" class="grid grid-cols-1 md:grid-cols-3 gap-5 p-5 bg-gradient-to-b from-slate-800 to-slate-900/50">
+
+        <!-- Top Sellers List -->
+        <div class="glass-panel p-6 rounded-[1.5rem] lg:col-span-1 flex flex-col min-h-[300px]">
+            <h3 class="text-base font-semibold text-white mb-4 flex items-center">
+                <div class="w-1.5 h-5 bg-apple-green rounded-full mr-2"></div> Top Products
+            </h3>
+            <div id="topSellersList" class="flex-1 overflow-y-auto space-y-2 pr-1">
+                <!-- Injected via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Actionable Insights -->
+    <div class="glass-panel rounded-[1.5rem] flex flex-col overflow-hidden mb-6">
+        <div class="bg-white/5 p-4 border-b border-white/10 flex items-center">
+            <i data-lucide="sparkles" class="w-4 h-4 mr-2 text-apple-orange"></i> 
+            <h3 class="text-sm font-semibold text-white">Siri-like Insights</h3>
+        </div>
+        <div id="insightsPanel" class="grid grid-cols-1 md:grid-cols-3 gap-px bg-white/10">
             <!-- Insights will be injected here via JS -->
         </div>
     </div>
 
     <!-- Main JavaScript Logic -->
     <script>
-        // --- Supabase Config (Hidden backend config) ---
+        // --- Backend Config (Hidden) ---
         const SUPA_URL = "https://wzoyahpilghrffedbclc.supabase.co";
         const SUPA_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6b3lhaHBpbGdocmZmZWRiY2xjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NTI5MDEsImV4cCI6MjA4OTQyODkwMX0.uv-Mw91g0a2qkhZyMdeEmwQXI2d9EMP5QC-vM5arjyw";
         const SUPA_TABLE = "sales_txn";
@@ -292,17 +274,25 @@
         lucide.createIcons();
         Chart.register(window['chartjs-plugin-annotation']);
 
-        Chart.defaults.color = '#94A3B8'; 
-        Chart.defaults.font.family = 'Nunito, ui-sans-serif, system-ui, sans-serif';
-        const gridColor = '#334155'; 
+        // macOS Chart defaults
+        Chart.defaults.color = '#8E8E93'; 
+        Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif';
+        const gridColor = 'rgba(255, 255, 255, 0.05)'; 
 
         let rawData = [];
         let filteredData = [];
-        let saleMethodMap = {}; // Maps SaleMethodID to 'Sales Channel' Name
-        let charts = { trend: null, branch: null, scatter: null };
+        let saleMethodMap = {}; 
+        let charts = { trend: null, scatter: null };
+        
+        // Cross-Filter States
         let activeProductFilter = null;
+        let activeGroupFilter = null;
+        let activeSubChannelFilter = null;
 
-        const cBlue = '#60A5FA', cGreen = '#34D399', cOrange = '#FBBF24', cPurple = '#A78BFA', cRose = '#FB7185';
+        const colors = {
+            blue: '#0A84FF', green: '#30D158', orange: '#FF9F0A', 
+            purple: '#BF5AF2', red: '#FF453A', gray: '#8E8E93'
+        };
 
         const elFilters = {
             start: document.getElementById('filterStartDate'),
@@ -311,36 +301,30 @@
             group: document.getElementById('filterGroup')
         };
         const elKpis = {
-            rev: document.getElementById('kpiRevenue'),
-            profit: document.getElementById('kpiProfit'),
-            margin: document.getElementById('kpiMargin'),
-            qty: document.getElementById('kpiQty'),
+            rev: document.getElementById('kpiRevenue'), profit: document.getElementById('kpiProfit'),
+            margin: document.getElementById('kpiMargin'), qty: document.getElementById('kpiQty'),
             returnRate: document.getElementById('kpiReturn')
         };
-        const elInsights = document.getElementById('insightsPanel');
 
-        const formatCurr = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'THB', minimumFractionDigits: 0 }).format(val);
-        const formatNum = (val) => new Intl.NumberFormat('en-US').format(val);
+        const formatCurr = (val) => new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', minimumFractionDigits: 0 }).format(val);
+        const formatNum = (val) => new Intl.NumberFormat('th-TH').format(val);
 
-        // UI Feedback Handlers
         const setSyncStatus = (status, text) => {
             const dot = document.getElementById('syncDot');
             const txt = document.getElementById('syncText');
             if(status === 'loading') {
-                dot.className = "w-2 h-2 rounded-full bg-friendly-orange animate-pulse mr-2";
+                dot.className = "w-2 h-2 rounded-full bg-apple-orange animate-pulse mr-2";
                 txt.innerText = text || "Syncing...";
             } else if (status === 'error') {
-                dot.className = "w-2 h-2 rounded-full bg-friendly-rose mr-2";
+                dot.className = "w-2 h-2 rounded-full bg-apple-red mr-2";
                 txt.innerText = text || "Offline";
             } else {
-                dot.className = "w-2 h-2 rounded-full bg-friendly-green animate-pulse mr-2";
-                txt.innerText = text || "Live Data";
+                dot.className = "w-2 h-2 rounded-full bg-apple-green animate-pulse mr-2";
+                txt.innerText = text || "Live";
             }
         }
 
-        // --- Data Categorization & Enrichment ---
-        
-        // Fallback categorizer if table join fails or is offline
+        // --- Data Logic ---
         const categorizeChannelFallback = (rawChannel) => {
             if (!rawChannel) return 'Other';
             const lower = rawChannel.toLowerCase();
@@ -355,60 +339,47 @@
 
         const enrichData = (obj) => {
             const pName = obj.ProductName || '';
-            
-            // 1. Filter out 'เงินมัดจำ' (Deposit)
-            if (pName.includes('เงินมัดจำ') || pName.toUpperCase().includes('DEPOSIT')) {
-                return null;
-            }
+            if (pName.includes('เงินมัดจำ') || pName.toUpperCase().includes('DEPOSIT')) return null;
 
             const invType = (obj.InvType || '').trim().toUpperCase();
             const isPositive = ['N', 'S', 'Z'].includes(invType);
             const isNegative = ['C', 'CN'].includes(invType);
+            if (!isPositive && !isNegative) return null;
 
-            // 2. Only allow N, S, Z as Sales and C, CN as Returns
-            if (!isPositive && !isNegative) {
-                return null;
-            }
+            let absQty = Math.abs(parseFloat(obj.Qty) || 0);
+            let absUnitPrice = Math.abs(parseFloat(obj.UnitPrice) || 0);
+            let absDiscountRate = Math.abs(parseFloat(obj.DiscountRate) || 0);
+            let absOthItemDiscAmt = Math.abs(parseFloat(obj.OthItemDiscAmt) || 0);
+            let absAvgCost = Math.abs(parseFloat(obj.AvgCost) || 0);
+            
+            // Revenue = (Qty * UnitPrice)*(100-DiscountRate)/100 - OthItemDiscAmt
+            let revenue = (absQty * absUnitPrice) * ((100 - absDiscountRate) / 100) - absOthItemDiscAmt;
+            // COGS = Qty * AvgCost
+            let cogs = absQty * absAvgCost;
 
-            let qty = parseFloat(obj.Qty) || 0;
-            let revenueIncVat = parseFloat(obj.UnitPriceIncVat) || 0;
-            let unitPrice = parseFloat(obj.UnitPrice) || 0;
-            let cost = parseFloat(obj.AvgCost) || 0;
+            let finalQty = isNegative ? -absQty : absQty;
+            let finalRevenue = isNegative ? -revenue : revenue;
+            let finalCost = isNegative ? -cogs : cogs;
             
-            // 3. Set Negative logic for CN/C
-            if (isNegative) {
-                qty = -Math.abs(qty);
-                revenueIncVat = -Math.abs(revenueIncVat);
-                unitPrice = -Math.abs(unitPrice);
-                cost = -Math.abs(cost);
-            } else {
-                qty = Math.abs(qty);
-                revenueIncVat = Math.abs(revenueIncVat);
-                unitPrice = Math.abs(unitPrice);
-                cost = Math.abs(cost);
-            }
-            
-            // 4. Resolve Channel Name (Join with Sale Method Map)
-            let channelName = 'Other';
+            let channelGroup = 'Other';
+            let subChannel = obj.SaleMethodName || obj.SaleChannelName || 'Unknown';
+
             if (Object.keys(saleMethodMap).length > 0 && obj.SaleMethod) {
-                let mappedChannel = saleMethodMap[obj.SaleMethod];
-                if (mappedChannel) {
-                    // Remove "MP " prefix to make it look clean (e.g. "MP Online" -> "Online")
-                    channelName = mappedChannel.replace(/^MP\s+/i, '').trim();
+                let mappedData = saleMethodMap[obj.SaleMethod];
+                if (mappedData) {
+                    channelGroup = mappedData.group.replace(/^MP\s+/i, '').trim();
+                    subChannel = mappedData.sub || subChannel;
                 }
             } else {
-                // Fallback if mapping isn't loaded
-                channelName = categorizeChannelFallback(obj.SaleChannelName);
+                channelGroup = categorizeChannelFallback(obj.SaleChannelName);
             }
 
             return {
                 ...obj, 
-                NumericQty: qty, 
-                NumericRevenue: revenueIncVat, 
-                NumericNetPrice: unitPrice, 
-                NumericCost: cost,
+                NumericQty: finalQty, NumericRevenue: finalRevenue, NumericCost: finalCost, 
                 YearMonth: obj.InvDate && obj.InvDate.length >= 7 ? obj.InvDate.substring(0, 7) : 'Unknown',
-                SaleChannelName: channelName,
+                SaleChannelGroup: channelGroup,
+                SubChannelName: subChannel,
                 ProductGroup: obj.deptname ? obj.deptname : (obj.ProductName ? 'Uncategorized' : 'Unknown')
             };
         };
@@ -438,7 +409,6 @@
             for (let i = 1; i < lines.length; i++) {
                 if (!lines[i].trim()) continue;
                 const currentline = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                
                 const obj = {};
                 let hasData = false;
                 for (let j = 0; j < headers.length; j++) {
@@ -452,14 +422,13 @@
             return result;
         };
 
-        // --- Database Operations ---
+        // --- Database ---
         const fetchDashboardData = async () => {
             setSyncStatus('loading', 'Fetching DB...');
             try {
                 const baseUrl = SUPA_URL.replace(/\/$/, '');
                 const headers = { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}`, 'Content-Type': 'application/json' };
 
-                // 1. Fetch Sale Method Mapping first
                 try {
                     const methodEndpoint = `${baseUrl}/rest/v1/${METHOD_TABLE}?select=*`;
                     const methodRes = await fetch(methodEndpoint, { method: 'GET', headers });
@@ -467,15 +436,16 @@
                         const methodsData = await methodRes.json();
                         saleMethodMap = {};
                         methodsData.forEach(m => {
-                            if (m.SaleMethodID) saleMethodMap[m.SaleMethodID] = m['Sales Channel'];
+                            if (m.SaleMethodID) {
+                                saleMethodMap[m.SaleMethodID] = {
+                                    group: m['Sales Channel'] || 'Other',
+                                    sub: m['Name'] || 'Unknown'
+                                };
+                            }
                         });
-                        console.log("Loaded Sale Method Map:", saleMethodMap);
                     }
-                } catch (e) {
-                    console.warn("Could not fetch sale method mapping. Will use fallback.", e);
-                }
+                } catch (e) { console.warn("No method map"); }
 
-                // 2. Fetch main Transactions
                 const endpoint = `${baseUrl}/rest/v1/${SUPA_TABLE}?select=*&limit=10000`;
                 const response = await fetch(endpoint, { method: 'GET', headers });
 
@@ -483,23 +453,18 @@
                 const data = await response.json();
                 
                 if (data && data.length > 0) {
-                    // Map and filter out invalid rows (nulls)
                     rawData = data.map(enrichData).filter(item => item !== null);
                     populateFilterOptions();
                     applyFilters();
-                    setSyncStatus('success', 'Live Data');
-                } else {
-                    setSyncStatus('error', 'DB Empty');
-                }
+                    setSyncStatus('success', 'Live');
+                } else setSyncStatus('error', 'DB Empty');
             } catch (err) {
-                console.error("DB Fetch Error: ", err);
                 setSyncStatus('error', 'Offline');
             }
         };
 
         const uploadToSupabase = async (rawCsvArray) => {
             setSyncStatus('loading', 'Uploading...');
-            
             const cleanedData = rawCsvArray.map(cleanForDb);
             const chunkSize = 1000;
             const endpoint = `${SUPA_URL.replace(/\/$/, '')}/rest/v1/${SUPA_TABLE}`;
@@ -509,66 +474,53 @@
                     const chunk = cleanedData.slice(i, i + chunkSize);
                     const response = await fetch(endpoint, {
                         method: 'POST',
-                        headers: { 
-                            'apikey': SUPA_KEY, 
-                            'Authorization': `Bearer ${SUPA_KEY}`, 
-                            'Content-Type': 'application/json',
-                            'Prefer': 'return=minimal'
-                        },
+                        headers: { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
                         body: JSON.stringify(chunk)
                     });
-                    if (!response.ok) throw new Error(`Chunk upload failed`);
+                    if (!response.ok) throw new Error(`Chunk failed`);
                 }
-                
                 await fetchDashboardData();
-                
             } catch (err) {
-                console.error("DB Upload Error: ", err);
-                alert("Upload encountered an error. See console for details.");
-                setSyncStatus('error', 'Upload Failed');
+                alert("Upload failed.");
+                setSyncStatus('error', 'Failed');
             }
         };
 
         const generateMockData = () => {
             const data = [];
-            const channels = ['Showroom', 'Modern trade', 'Online', 'Event', 'B2B Project', 'Subscription'];
+            const channels = [
+                {g: 'Modern trade', sub: 'SB Bangna'}, {g: 'Modern trade', sub: 'B2S'}, 
+                {g: 'Online', sub: 'Shopee'}, {g: 'Online', sub: 'Lazada'},
+                {g: 'Showroom', sub: 'Main Showroom'}, {g: 'Event', sub: 'Commart'}
+            ];
             const products = [
-                { name: 'Product A (Premium)', group: 'Main Equipment', cost: 1500, price: 3500 },
-                { name: 'Product B (Standard)', group: 'Main Equipment', cost: 800, price: 1200 },
-                { name: 'Product C (Economy)', group: 'Accessories', cost: 200, price: 299 },
-                { name: 'Product D (Misc)', group: 'Accessories', cost: 50, price: 250 },
-                { name: 'เงินมัดจำ', group: 'Service', cost: 0, price: 5000 }, // Will be filtered out
-                { name: 'Maintenance Fee', group: 'Service', cost: 100, price: 1000 },
+                { name: 'Product A (Premium)', group: 'Main', cost: 1500, price: 3500 },
+                { name: 'Product B (Standard)', group: 'Main', cost: 800, price: 1200 },
+                { name: 'Product C (Eco)', group: 'Acc', cost: 200, price: 299 },
+                { name: 'Product D (Misc)', group: 'Acc', cost: 50, price: 250 },
+                { name: 'เงินมัดจำ', group: 'Service', cost: 0, price: 5000 } // filtered out
             ];
             for (let i = 0; i < 800; i++) {
                 const isReturn = Math.random() > 0.95;
-                const channel = channels[Math.floor(Math.random() * channels.length)];
-                const product = products[Math.floor(Math.random() * products.length)];
+                const ch = channels[Math.floor(Math.random() * channels.length)];
+                const p = products[Math.floor(Math.random() * products.length)];
                 const qty = Math.floor(Math.random() * 5) + 1;
-                const date = new Date();
-                date.setDate(date.getDate() - Math.floor(Math.random() * 90));
+                const date = new Date(); date.setDate(date.getDate() - Math.floor(Math.random() * 90));
                 
                 const enriched = enrichData({
-                    InvType: isReturn ? 'CN' : 'N',
-                    InvDate: date.toISOString().split('T')[0],
-                    SaleChannelName: channel, 
-                    SaleMethod: null, // Fallback trigger
-                    ProductName: product.name, 
-                    deptname: product.group,
-                    Qty: qty, 
-                    UnitPriceIncVat: product.price * qty,
-                    AvgCost: product.cost * qty
+                    InvType: isReturn ? 'CN' : 'N', InvDate: date.toISOString().split('T')[0],
+                    SaleChannelName: ch.g, SaleMethodName: ch.sub, SaleMethod: null,
+                    ProductName: p.name, deptname: p.group,
+                    Qty: qty, UnitPrice: p.price, DiscountRate: 0, OthItemDiscAmt: 0, AvgCost: p.cost
                 });
-                if (enriched) {
-                    data.push(enriched);
-                }
+                if (enriched) data.push(enriched);
             }
             return data;
         };
 
-        // --- Dashboard Update Logic ---
+        // --- Core UI & Filters ---
         const populateFilterOptions = () => {
-            const channels = ['All', ...Array.from(new Set(rawData.map(d => d.SaleChannelName))).filter(Boolean).sort()];
+            const channels = ['All', ...Array.from(new Set(rawData.map(d => d.SaleChannelGroup))).filter(Boolean).sort()];
             const groups = ['All', ...Array.from(new Set(rawData.map(d => d.ProductGroup))).filter(Boolean).sort()];
             
             elFilters.channel.innerHTML = channels.map(c => `<option value="${c}">${c === 'All' ? 'All Channels' : c}</option>`).join('');
@@ -584,21 +536,24 @@
         const renderActiveFilters = () => {
             const container = document.getElementById('activeCrossFilters');
             let html = '';
+            const pillStyle = "bg-white/10 text-white text-xs px-3 py-1 rounded-full flex items-center cursor-pointer border border-white/20 hover:bg-white/20 transition-colors backdrop-blur-md";
+            
             if (activeProductFilter) {
-                html += `
-                <span class="bg-friendly-purple/20 text-friendly-purple text-sm px-4 py-1.5 rounded-full flex items-center cursor-pointer border border-friendly-purple/30 hover:bg-friendly-purple/30 transition-colors" onclick="toggleProductFilter(null)">
-                    <i data-lucide="package" class="w-4 h-4 mr-2"></i> Product: ${activeProductFilter} 
-                    <i data-lucide="x-circle" class="w-4 h-4 ml-2 opacity-70 hover:opacity-100"></i>
-                </span>`;
+                html += `<span class="${pillStyle}" onclick="toggleProductFilter(null)"><i data-lucide="package" class="w-3 h-3 mr-1 text-apple-purple"></i> ${activeProductFilter} <i data-lucide="x-circle" class="w-3 h-3 ml-2 opacity-50"></i></span>`;
+            }
+            if (activeGroupFilter) {
+                html += `<span class="${pillStyle}" onclick="toggleGroupFilter(null)"><i data-lucide="folder" class="w-3 h-3 mr-1 text-apple-orange"></i> Group: ${activeGroupFilter} <i data-lucide="x-circle" class="w-3 h-3 ml-2 opacity-50"></i></span>`;
+            }
+            if (activeSubChannelFilter) {
+                html += `<span class="${pillStyle}" onclick="toggleSubChannelFilter(null)"><i data-lucide="map-pin" class="w-3 h-3 mr-1 text-apple-blue"></i> Branch: ${activeSubChannelFilter} <i data-lucide="x-circle" class="w-3 h-3 ml-2 opacity-50"></i></span>`;
             }
             container.innerHTML = html;
             lucide.createIcons();
         };
 
-        window.toggleProductFilter = (productName) => {
-            activeProductFilter = (activeProductFilter === productName) ? null : productName;
-            applyFilters();
-        };
+        window.toggleProductFilter = (name) => { activeProductFilter = (activeProductFilter === name) ? null : name; applyFilters(); };
+        window.toggleGroupFilter = (name) => { activeGroupFilter = (activeGroupFilter === name) ? null : name; if(!activeGroupFilter) activeSubChannelFilter = null; applyFilters(); };
+        window.toggleSubChannelFilter = (name) => { activeSubChannelFilter = (activeSubChannelFilter === name) ? null : name; applyFilters(); };
 
         const applyFilters = () => {
             const start = elFilters.start.value;
@@ -610,20 +565,22 @@
                 const rDate = row.InvDate || '';
                 return (!start || rDate >= start) && 
                        (!end || rDate <= end) && 
-                       (channel === 'All' || row.SaleChannelName === channel) && 
+                       (channel === 'All' || row.SaleChannelGroup === channel) && 
                        (group === 'All' || row.ProductGroup === group) &&
-                       (!activeProductFilter || row.ProductName === activeProductFilter);
+                       (!activeProductFilter || row.ProductName === activeProductFilter) &&
+                       (!activeGroupFilter || row.SaleChannelGroup === activeGroupFilter) &&
+                       (!activeSubChannelFilter || row.SubChannelName === activeSubChannelFilter);
             });
             
             renderActiveFilters();
             updateDashboard();
         };
 
+        // --- Renderers ---
         const updateDashboard = () => {
             let totalRev = 0, totalCost = 0, totalQty = 0, returnQty = 0;
             filteredData.forEach(r => {
-                totalRev += r.NumericRevenue;
-                totalCost += r.NumericCost;
+                totalRev += r.NumericRevenue; totalCost += r.NumericCost;
                 if (r.NumericQty > 0) totalQty += r.NumericQty;
                 if (r.NumericQty < 0) returnQty += Math.abs(r.NumericQty);
             });
@@ -637,137 +594,158 @@
             elKpis.qty.innerText = formatNum(totalQty);
             elKpis.returnRate.innerText = `${retRate.toFixed(2)}%`;
 
+            // Trend
             const tMap = {};
             filteredData.forEach(r => {
-                const ym = r.YearMonth;
-                if (ym === 'Unknown') return;
-                if (!tMap[ym]) tMap[ym] = { name: ym, rev: 0, prof: 0 };
-                tMap[ym].rev += r.NumericRevenue;
-                tMap[ym].prof += (r.NumericRevenue - r.NumericCost);
+                if (r.YearMonth === 'Unknown') return;
+                if (!tMap[r.YearMonth]) tMap[r.YearMonth] = { name: r.YearMonth, rev: 0, prof: 0 };
+                tMap[r.YearMonth].rev += r.NumericRevenue; tMap[r.YearMonth].prof += (r.NumericRevenue - r.NumericCost);
             });
             const tData = Object.values(tMap).sort((a, b) => a.name.localeCompare(b.name));
 
-            const bMap = {};
-            filteredData.forEach(r => {
-                const b = r.SaleChannelName || 'Unknown';
-                if (!bMap[b]) bMap[b] = { name: b, rev: 0, prof: 0 };
-                bMap[b].rev += r.NumericRevenue;
-                bMap[b].prof += (r.NumericRevenue - r.NumericCost);
-            });
-            const bData = Object.values(bMap).map(b => ({
-                ...b, margin: b.rev > 0 ? (b.prof / b.rev) * 100 : 0
-            })).sort((a, b) => b.rev - a.rev);
-
+            // Product Scatter
             const pMap = {};
             filteredData.forEach(r => {
-                const p = r.ProductName || 'Unknown';
-                if (!pMap[p]) pMap[p] = { name: p, rev: 0, cost: 0, qty: 0 };
-                pMap[p].rev += r.NumericRevenue;
-                pMap[p].cost += r.NumericCost;
-                pMap[p].qty += r.NumericQty;
+                if (!pMap[r.ProductName]) pMap[r.ProductName] = { name: r.ProductName, rev: 0, cost: 0, qty: 0 };
+                pMap[r.ProductName].rev += r.NumericRevenue; pMap[r.ProductName].cost += r.NumericCost; pMap[r.ProductName].qty += r.NumericQty;
             });
             const pData = Object.values(pMap).filter(p => p.qty > 0 && p.rev > 0).map(p => {
-                const prf = p.rev - p.cost;
-                return { ...p, profit: prf, margin: (prf / p.rev) * 100 };
+                const prf = p.rev - p.cost; return { ...p, profit: prf, margin: (prf / p.rev) * 100 };
             });
-
             const avgQty = pData.length ? pData.reduce((s, c) => s + c.qty, 0) / pData.length : 0;
             const avgMargin = pData.length ? pData.reduce((s, c) => s + c.margin, 0) / pData.length : 0;
 
-            updateCharts(tData, bData, pData, avgQty, avgMargin);
+            // Channel Hierarchy (Group -> Sub)
+            const hMap = {};
+            // Base on rawData to always show full hierarchy structure, but calculate numbers from filteredData
+            // Actually, best to calculate hierarchy based on filteredData so it reflects dates/products
+            filteredData.forEach(r => {
+                const g = r.SaleChannelGroup; const s = r.SubChannelName;
+                if (!hMap[g]) hMap[g] = { name: g, rev: 0, subs: {} };
+                if (!hMap[g].subs[s]) hMap[g].subs[s] = { name: s, rev: 0 };
+                hMap[g].rev += r.NumericRevenue;
+                hMap[g].subs[s].rev += r.NumericRevenue;
+            });
+
+            updateCharts(tData, pData, avgQty, avgMargin);
+            updateHierarchyList(hMap, totalRev);
             updateTopSellers(pData);
-            updateInsights(bData, pData, avgQty, avgMargin);
+            updateInsights(Object.values(hMap).sort((a,b)=>b.rev-a.rev), pData, avgQty, avgMargin);
+        };
+
+        const updateHierarchyList = (hMap, totalSystemRev) => {
+            const container = document.getElementById('channelHierarchyList');
+            const groups = Object.values(hMap).sort((a, b) => b.rev - a.rev);
+            
+            if(groups.length === 0) {
+                container.innerHTML = '<div class="text-sm text-apple-gray text-center py-4">No data</div>';
+                return;
+            }
+
+            let html = '';
+            groups.forEach(g => {
+                const isGroupSelected = activeGroupFilter === g.name;
+                const gPct = totalSystemRev ? ((g.rev / totalSystemRev) * 100).toFixed(1) : 0;
+                const subs = Object.values(g.subs).sort((a, b) => b.rev - a.rev);
+                
+                // details/summary for macOS native accordion
+                html += `
+                <details class="group bg-white/5 rounded-xl border border-white/5 overflow-hidden transition-all duration-300" ${isGroupSelected || subs.length<3 ? 'open' : ''}>
+                    <summary class="p-3 cursor-pointer hover:bg-white/5 transition-colors flex flex-col relative outline-none" onclick="event.preventDefault(); toggleGroupFilter('${g.name}')">
+                        <!-- Progress Background -->
+                        <div class="absolute top-0 left-0 bottom-0 bg-apple-blue/10 pointer-events-none" style="width: ${gPct}%"></div>
+                        
+                        <div class="flex justify-between items-center relative z-10">
+                            <div class="flex items-center text-sm font-bold text-white">
+                                <i data-lucide="chevron-right" class="w-4 h-4 mr-2 text-apple-gray transition-transform duration-200 group-open:rotate-90"></i>
+                                ${g.name}
+                            </div>
+                            <div class="text-right">
+                                <span class="text-sm font-semibold text-white block">${formatCurr(g.rev)}</span>
+                            </div>
+                        </div>
+                    </summary>
+                    <div class="px-3 pb-3 pt-1 space-y-1 border-t border-white/5 bg-black/20">
+                `;
+                
+                subs.forEach(s => {
+                    const isSubSelected = activeSubChannelFilter === s.name;
+                    const subBg = isSubSelected ? 'bg-apple-blue/20 border-apple-blue/50' : 'hover:bg-white/10 border-transparent';
+                    const sPct = g.rev ? ((s.rev / g.rev) * 100).toFixed(1) : 0;
+                    
+                    html += `
+                        <div class="p-2 rounded-lg cursor-pointer flex flex-col relative border ${subBg} transition-colors ml-5" onclick="toggleSubChannelFilter('${s.name.replace(/'/g, "\\'")}')">
+                            <div class="absolute bottom-0 left-2 right-2 h-0.5 bg-white/10 rounded-full overflow-hidden">
+                                <div class="h-full bg-apple-blue/50" style="width: ${sPct}%"></div>
+                            </div>
+                            <div class="flex justify-between items-center mb-1 relative z-10">
+                                <span class="text-xs text-slate-300 truncate pr-2 flex items-center">
+                                    <div class="w-1.5 h-1.5 rounded-full bg-apple-gray mr-2"></div>${s.name}
+                                </span>
+                                <span class="text-xs text-white">${formatCurr(s.rev)}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += `</div></details>`;
+            });
+            container.innerHTML = html;
+            lucide.createIcons();
         };
 
         const updateTopSellers = (pData) => {
-            const sorted = [...pData].sort((a,b) => b.rev - a.rev).slice(0, 10);
-            const maxRev = sorted.length ? sorted[0].rev : 1;
-            
+            const sorted = [...pData].sort((a,b) => b.rev - a.rev).slice(0, 8);
             let html = '';
             sorted.forEach((p, idx) => {
-                const percent = (p.rev / maxRev) * 100;
                 const isSelected = activeProductFilter === p.name;
-                const bgClass = isSelected ? 'bg-friendly-purple/20 border-friendly-purple' : 'bg-slate-800/50 border-slate-700/50 hover:bg-slate-700/80';
+                const bg = isSelected ? 'bg-apple-purple/20 border-apple-purple/50' : 'bg-white/5 border-white/5 hover:bg-white/10';
                 
                 html += `
-                <div class="p-3 rounded-xl border ${bgClass} cursor-pointer transition-all group" onclick="toggleProductFilter('${p.name.replace(/'/g, "\\'")}')">
-                    <div class="flex justify-between items-center mb-2">
-                        <div class="flex items-center overflow-hidden pr-2">
-                            <span class="text-xs font-bold w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center mr-3 text-slate-300 flex-shrink-0 group-hover:bg-friendly-blue group-hover:text-slate-900 transition-colors">${idx+1}</span>
-                            <h4 class="text-sm text-white truncate font-medium group-hover:text-friendly-blue transition-colors" title="${p.name}">${p.name}</h4>
+                <div class="p-2.5 rounded-xl border ${bg} cursor-pointer transition-colors flex items-center justify-between" onclick="toggleProductFilter('${p.name.replace(/'/g, "\\'")}')">
+                    <div class="flex items-center overflow-hidden pr-2">
+                        <span class="text-[10px] font-bold w-5 h-5 rounded-full bg-black/50 text-apple-gray flex items-center justify-center mr-2 flex-shrink-0">${idx+1}</span>
+                        <div class="flex flex-col truncate">
+                            <span class="text-xs text-white truncate font-medium" title="${p.name}">${p.name}</span>
                         </div>
-                        <span class="text-sm font-bold text-friendly-green whitespace-nowrap">${formatCurr(p.rev)}</span>
                     </div>
-                    <div class="w-full bg-slate-700/50 h-2 rounded-full overflow-hidden">
-                        <div class="bg-gradient-to-r from-friendly-blue to-friendly-green h-full rounded-full transition-all duration-500" style="width: ${percent}%"></div>
-                    </div>
+                    <span class="text-xs font-semibold text-apple-green whitespace-nowrap">${formatCurr(p.rev)}</span>
                 </div>`;
             });
-            
-            document.getElementById('topSellersList').innerHTML = html || '<div class="text-center text-slate-500 py-8">No data available</div>';
+            document.getElementById('topSellersList').innerHTML = html || '<p class="text-xs text-apple-gray">No data</p>';
         };
 
+        // --- Charts ---
         const tooltipConfig = {
-            backgroundColor: '#1E293B', titleColor: '#F8FAFC', bodyColor: '#CBD5E1', borderColor: '#334155',
-            borderWidth: 1, padding: 12, cornerRadius: 12, usePointStyle: true,
-            titleFont: { size: 14, weight: 'bold', family: 'Nunito' }, bodyFont: { size: 13, family: 'Nunito' }
+            backgroundColor: 'rgba(28, 28, 30, 0.85)', titleColor: '#FFFFFF', bodyColor: '#EBEBF5', borderColor: 'rgba(255,255,255,0.1)',
+            borderWidth: 1, padding: 10, cornerRadius: 10, usePointStyle: true,
+            titleFont: { size: 13, weight: 'bold', family: '-apple-system' }, bodyFont: { size: 12, family: '-apple-system' }
         };
 
-        const updateCharts = (tData, bData, pData, avgQty, avgMargin) => {
+        const updateCharts = (tData, pData, avgQty, avgMargin) => {
             const commonScales = {
-                x: { grid: { color: gridColor, drawBorder: false }, ticks: { color: '#94A3B8', font: { family: 'Nunito' } } },
-                y: { grid: { color: gridColor, drawBorder: false }, border: { dash: [4, 4] }, ticks: { color: '#94A3B8', font: { family: 'Nunito' } } }
+                x: { grid: { color: gridColor, drawBorder: false }, ticks: { color: '#8E8E93', font: { family: '-apple-system' } } },
+                y: { grid: { color: gridColor, drawBorder: false }, border: { dash: [4, 4] }, ticks: { color: '#8E8E93', font: { family: '-apple-system' } } }
             };
 
             const tCtx = document.getElementById('trendChart').getContext('2d');
             if (charts.trend) charts.trend.destroy();
-            let gradientBlue = tCtx.createLinearGradient(0, 0, 0, 400);
-            gradientBlue.addColorStop(0, 'rgba(96, 165, 250, 0.2)'); gradientBlue.addColorStop(1, 'rgba(96, 165, 250, 0)');
+            let gradBlue = tCtx.createLinearGradient(0, 0, 0, 300);
+            gradBlue.addColorStop(0, 'rgba(10, 132, 255, 0.3)'); gradBlue.addColorStop(1, 'rgba(10, 132, 255, 0)');
 
             charts.trend = new Chart(tCtx, {
                 type: 'line',
                 data: {
                     labels: tData.map(d => d.name),
                     datasets: [
-                        { label: 'Revenue', data: tData.map(d => d.rev), borderColor: cBlue, backgroundColor: gradientBlue, borderWidth: 3, tension: 0.4, fill: true, pointBackgroundColor: '#0F172A', pointBorderWidth: 2, pointRadius: 4, pointHoverRadius: 6 },
-                        { label: 'Gross Profit', data: tData.map(d => d.prof), borderColor: cGreen, borderWidth: 3, borderDash: [5, 5], tension: 0.4, pointRadius: 0, pointHoverRadius: 6 }
+                        { label: 'Revenue', data: tData.map(d => d.rev), borderColor: colors.blue, backgroundColor: gradBlue, borderWidth: 3, tension: 0.4, fill: true, pointRadius: 0, pointHoverRadius: 5 },
+                        { label: 'Profit', data: tData.map(d => d.prof), borderColor: colors.green, borderWidth: 2, borderDash: [5, 5], tension: 0.4, pointRadius: 0, pointHoverRadius: 5 }
                     ]
                 },
                 options: { 
                     responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
                     scales: { ...commonScales, y: { ...commonScales.y, ticks: { ...commonScales.y.ticks, callback: v => `$${v/1000}k` } } }, 
-                    plugins: { tooltip: { ...tooltipConfig, callbacks: { label: c => ` ${c.dataset.label}: ${formatCurr(c.raw)}` } }, legend: { position: 'top', align: 'end', labels: { usePointStyle: true, boxWidth: 8, font: {family: 'Nunito'} } } } 
-                }
-            });
-
-            const bCtx = document.getElementById('branchChart').getContext('2d');
-            if (charts.branch) charts.branch.destroy();
-            charts.branch = new Chart(bCtx, {
-                type: 'bar',
-                data: {
-                    labels: bData.map(d => d.name),
-                    datasets: [
-                        { type: 'line', label: 'Margin %', data: bData.map(d => d.margin), borderColor: cOrange, backgroundColor: cOrange, yAxisID: 'y1', borderWidth: 3, tension: 0.4, pointRadius: 5, pointBackgroundColor: '#0F172A', pointBorderWidth: 2 },
-                        { type: 'bar', label: 'Revenue', data: bData.map(d => d.rev), backgroundColor: cBlue, hoverBackgroundColor: '#8B5CF6', borderRadius: 8, yAxisID: 'y', barPercentage: 0.5 }
-                    ]
-                },
-                options: { 
-                    responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
-                    onClick: (e, elements, chart) => {
-                        if(elements[0]) {
-                            const bName = chart.data.labels[elements[0].index];
-                            const selectEl = document.getElementById('filterChannel');
-                            selectEl.value = (selectEl.value === bName) ? 'All' : bName;
-                            applyFilters();
-                        }
-                    },
-                    onHover: (e, elements) => { e.native.target.style.cursor = elements[0] ? 'pointer' : 'default'; },
-                    scales: { 
-                        x: commonScales.x,
-                        y: { ...commonScales.y, position: 'left', ticks: { ...commonScales.y.ticks, callback: v => `$${v/1000}k` } },
-                        y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#94A3B8', font: {family:'Nunito'}, callback: v => `${v}%` } }
-                    },
-                    plugins: { tooltip: { ...tooltipConfig, callbacks: { label: c => c.datasetIndex === 0 ? ` ${c.dataset.label}: ${c.raw.toFixed(1)}%` : ` ${c.dataset.label}: ${formatCurr(c.raw)}` } }, legend: { position: 'top', align: 'end', labels: { usePointStyle: true, boxWidth: 8, font: {family: 'Nunito'} } } }
+                    plugins: { tooltip: { ...tooltipConfig, callbacks: { label: c => ` ${c.dataset.label}: ${formatCurr(c.raw)}` } }, legend: { display: false } } 
                 }
             });
 
@@ -775,47 +753,42 @@
             if (charts.scatter) charts.scatter.destroy();
             const maxRev = Math.max(...pData.map(d => d.rev), 1);
             const bubbleData = pData.map(d => {
-                let color = '#64748b'; 
-                if (d.qty >= avgQty && d.margin >= avgMargin) color = cGreen; 
-                else if (d.qty >= avgQty && d.margin < avgMargin) color = cOrange; 
-                else if (d.qty < avgQty && d.margin >= avgMargin) color = cBlue; 
-                else color = cRose; 
-                
-                if (activeProductFilter && d.name !== activeProductFilter) color = '#334155';
-
-                return { x: d.qty, y: d.margin, r: Math.max((d.rev / maxRev) * 20, 6), rawRev: d.rev, name: d.name, bgColor: color };
+                let c = '#8E8E93'; 
+                if (d.qty >= avgQty && d.margin >= avgMargin) c = colors.green; 
+                else if (d.qty >= avgQty && d.margin < avgMargin) c = colors.orange; 
+                else if (d.qty < avgQty && d.margin >= avgMargin) c = colors.blue; 
+                else c = colors.red; 
+                if (activeProductFilter && d.name !== activeProductFilter) c = 'rgba(142, 142, 147, 0.2)';
+                return { x: d.qty, y: d.margin, r: Math.max((d.rev / maxRev) * 20, 5), rawRev: d.rev, name: d.name, bgColor: c };
             });
 
             charts.scatter = new Chart(sCtx, {
                 type: 'bubble',
                 data: {
                     datasets: [{
-                        label: 'Products', data: bubbleData,
-                        backgroundColor: bubbleData.map(d => d.bgColor + '99'),
-                        borderColor: bubbleData.map(d => d.bgColor), borderWidth: 2,
-                        hoverBackgroundColor: bubbleData.map(d => d.bgColor + 'E6'),
+                        data: bubbleData,
+                        backgroundColor: bubbleData.map(d => d.bgColor.startsWith('rgba') ? d.bgColor : d.bgColor + '80'),
+                        borderColor: bubbleData.map(d => d.bgColor), borderWidth: 1,
+                        hoverBackgroundColor: bubbleData.map(d => d.bgColor.startsWith('rgba') ? d.bgColor : d.bgColor + 'E6'),
                     }]
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     onClick: (e, elements, chart) => {
-                        if(elements[0]) {
-                            const pName = chart.data.datasets[0].data[elements[0].index].name;
-                            window.toggleProductFilter(pName);
-                        }
+                        if(elements[0]) window.toggleProductFilter(chart.data.datasets[0].data[elements[0].index].name);
                     },
                     onHover: (e, elements) => { e.native.target.style.cursor = elements[0] ? 'pointer' : 'default'; },
                     scales: {
-                        x: { ...commonScales.x, title: { display: true, text: 'Sales Volume (Units)', color: '#64748b', font: {family:'Nunito', size: 12} } },
-                        y: { ...commonScales.y, title: { display: true, text: 'Profit Margin (%)', color: '#64748b', font: {family:'Nunito', size: 12} } }
+                        x: { ...commonScales.x, title: { display: true, text: 'Volume (Units)', color: '#8E8E93' } },
+                        y: { ...commonScales.y, title: { display: true, text: 'Margin (%)', color: '#8E8E93' } }
                     },
                     plugins: {
                         legend: { display: false },
-                        tooltip: { ...tooltipConfig, callbacks: { label: c => { const d = c.raw; return [d.name, `Revenue: ${formatCurr(d.rawRev)}`, `Volume: ${formatNum(d.x)} units`, `Margin: ${d.y.toFixed(1)}%`]; } } },
+                        tooltip: { ...tooltipConfig, callbacks: { label: c => { const d = c.raw; return [d.name, `Rev: ${formatCurr(d.rawRev)}`, `Vol: ${formatNum(d.x)}`, `Margin: ${d.y.toFixed(1)}%`]; } } },
                         annotation: {
                             annotations: {
-                                lineX: { type: 'line', xMin: avgQty, xMax: avgQty, borderColor: '#475569', borderWidth: 2, borderDash: [6, 6] },
-                                lineY: { type: 'line', yMin: avgMargin, yMax: avgMargin, borderColor: '#475569', borderWidth: 2, borderDash: [6, 6] }
+                                lineX: { type: 'line', xMin: avgQty, xMax: avgQty, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1, borderDash: [4, 4] },
+                                lineY: { type: 'line', yMin: avgMargin, yMax: avgMargin, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1, borderDash: [4, 4] }
                             }
                         }
                     }
@@ -823,65 +796,50 @@
             });
         };
 
-        const updateInsights = (bData, pData, avgQty, avgMargin) => {
+        const updateInsights = (gData, pData, avgQty, avgMargin) => {
             elInsights.innerHTML = '';
-            if (!filteredData.length) {
-                elInsights.innerHTML = '<div class="col-span-full text-center py-8 text-slate-500"><i data-lucide="inbox" class="w-8 h-8 mx-auto mb-2 opacity-50"></i><p>No data available for insights</p></div>';
-                lucide.createIcons();
-                return;
-            }
+            if (!filteredData.length) return;
 
             let html = '';
             
-            if (bData.length > 1) {
+            if (gData.length > 0) {
                 html += `
-                <div class="bg-slate-800 p-5 rounded-[1.5rem] border border-friendly-blue/20 shadow-sm relative overflow-hidden hover:-translate-y-1 transition-transform duration-300">
-                    <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-friendly-blue"></div>
-                    <div class="flex flex-col">
-                        <div class="flex items-center mb-3">
-                            <div class="bg-friendly-blue/10 p-2.5 rounded-full mr-3 text-friendly-blue"><i data-lucide="store" class="w-5 h-5"></i></div>
-                            <h4 class="text-base font-bold text-white">Top Performing Channel</h4>
-                        </div>
-                        <p class="text-sm text-slate-300 leading-relaxed pl-2">
-                            <span class="font-bold text-friendly-blue text-base">${bData[0].name}</span> generated the highest revenue. Consider applying its strategies to <span class="text-slate-400 font-semibold">${bData[bData.length-1].name}</span>.
-                        </p>
+                <div class="p-5 flex flex-col bg-white/5 relative group hover:bg-white/10 transition-colors">
+                    <div class="flex items-center mb-2">
+                        <i data-lucide="compass" class="w-4 h-4 text-apple-blue mr-2"></i>
+                        <h4 class="text-sm font-semibold text-white">Channel Leader</h4>
                     </div>
+                    <p class="text-xs text-apple-gray leading-relaxed">
+                        <span class="text-white font-medium">${gData[0].name}</span> dominates revenue. Adapt its success model for <span class="text-white opacity-70">${gData[gData.length-1].name}</span>.
+                    </p>
                 </div>`;
             }
 
             const cows = pData.filter(p => p.qty >= avgQty && p.margin < avgMargin).sort((a,b) => b.rev - a.rev);
             if (cows.length > 0) {
                 html += `
-                <div class="bg-slate-800 p-5 rounded-[1.5rem] border border-friendly-orange/20 shadow-sm relative overflow-hidden hover:-translate-y-1 transition-transform duration-300">
-                    <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-friendly-orange"></div>
-                    <div class="flex flex-col">
-                        <div class="flex items-center mb-3">
-                            <div class="bg-friendly-orange/10 p-2.5 rounded-full mr-3 text-friendly-orange"><i data-lucide="trending-down" class="w-5 h-5"></i></div>
-                            <h4 class="text-base font-bold text-white">Margin Squeeze Warning</h4>
-                        </div>
-                        <p class="text-sm text-slate-300 leading-relaxed pl-2">
-                            <span class="font-bold text-friendly-orange">${cows[0].name}</span> drives high volume but has below-average margins.
-                        </p>
-                        <div class="mt-3 pl-2"><span class="text-xs text-friendly-orange font-medium bg-friendly-orange/10 px-3 py-1.5 rounded-lg border border-friendly-orange/20 flex items-center w-fit"><i data-lucide="lightbulb" class="w-3 h-3 mr-1"></i> Consider a slight price increase or reducing costs</span></div>
+                <div class="p-5 flex flex-col bg-white/5 relative group hover:bg-white/10 transition-colors border-l md:border-l-0 md:border-x border-white/5">
+                    <div class="flex items-center mb-2">
+                        <i data-lucide="alert-triangle" class="w-4 h-4 text-apple-orange mr-2"></i>
+                        <h4 class="text-sm font-semibold text-white">Margin Warning</h4>
                     </div>
+                    <p class="text-xs text-apple-gray leading-relaxed">
+                        <span class="text-white font-medium">${cows[0].name}</span> sells fast but lacks margin. Consider a slight price tweak.
+                    </p>
                 </div>`;
             }
 
             const opps = pData.filter(p => p.qty < avgQty && p.margin >= avgMargin).sort((a,b) => b.margin - a.margin);
             if (opps.length > 0) {
                 html += `
-                <div class="bg-slate-800 p-5 rounded-[1.5rem] border border-friendly-purple/20 shadow-sm relative overflow-hidden hover:-translate-y-1 transition-transform duration-300">
-                    <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-friendly-purple"></div>
-                    <div class="flex flex-col">
-                        <div class="flex items-center mb-3">
-                            <div class="bg-friendly-purple/10 p-2.5 rounded-full mr-3 text-friendly-purple"><i data-lucide="gift" class="w-5 h-5"></i></div>
-                            <h4 class="text-base font-bold text-white">High Growth Potential</h4>
-                        </div>
-                        <p class="text-sm text-slate-300 leading-relaxed pl-2">
-                            <span class="font-bold text-friendly-purple">${opps[0].name}</span> has great margins but low sales volume.
-                        </p>
-                        <div class="mt-3 pl-2"><span class="text-xs text-friendly-purple font-medium bg-friendly-purple/10 px-3 py-1.5 rounded-lg border border-friendly-purple/20 flex items-center w-fit"><i data-lucide="lightbulb" class="w-3 h-3 mr-1"></i> Create bundle promotions or increase ad spend</span></div>
+                <div class="p-5 flex flex-col bg-white/5 relative group hover:bg-white/10 transition-colors">
+                    <div class="flex items-center mb-2">
+                        <i data-lucide="rocket" class="w-4 h-4 text-apple-purple mr-2"></i>
+                        <h4 class="text-sm font-semibold text-white">Untapped Value</h4>
                     </div>
+                    <p class="text-xs text-apple-gray leading-relaxed">
+                        <span class="text-white font-medium">${opps[0].name}</span> has high margins but low volume. Push via bundles or ads.
+                    </p>
                 </div>`;
             }
 
@@ -889,9 +847,7 @@
             lucide.createIcons();
         };
 
-        // --- Event Listeners & Start ---
-        
-        // Handle File Upload to Supabase DB
+        // --- Event Listeners & Boot ---
         document.getElementById('csvFileInput').addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (!file) return;
@@ -901,37 +857,27 @@
             const txt = document.getElementById('uploadText');
             const label = document.getElementById('uploadLabel');
 
-            iconD.classList.add('hidden');
-            iconL.classList.remove('hidden');
-            txt.innerText = "Uploading...";
-            label.classList.add('opacity-75', 'cursor-not-allowed', 'pointer-events-none');
+            iconD.classList.add('hidden'); iconL.classList.remove('hidden');
+            txt.innerText = "Uploading..."; label.classList.add('opacity-50', 'pointer-events-none');
 
             const reader = new FileReader();
             reader.onload = async (evt) => {
                 const parsedRaw = parseCSVRaw(evt.target.result);
-                if (parsedRaw.length) {
-                    await uploadToSupabase(parsedRaw);
-                } else {
-                    alert("No valid data found in CSV.");
-                }
-                // Reset Upload Button UI
-                iconD.classList.remove('hidden');
-                iconL.classList.add('hidden');
-                txt.innerText = "Upload to DB";
-                label.classList.remove('opacity-75', 'cursor-not-allowed', 'pointer-events-none');
-                e.target.value = ''; // Reset input
+                if (parsedRaw.length) await uploadToSupabase(parsedRaw);
+                iconD.classList.remove('hidden'); iconL.classList.add('hidden');
+                txt.innerText = "Upload Data"; label.classList.remove('opacity-50', 'pointer-events-none');
+                e.target.value = ''; 
             };
             reader.readAsText(file);
         });
 
         Object.values(elFilters).forEach(el => el.addEventListener('change', applyFilters));
 
-        // Run Initial Mock Data logic or try fetching Live DB immediately
+        // Start
         rawData = generateMockData();
         populateFilterOptions();
         applyFilters();
         
-        // Uncomment this to fetch live data on init automatically
         fetchDashboardData();
 
     </script>
