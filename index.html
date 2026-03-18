@@ -69,45 +69,6 @@
 </head>
 <body class="min-h-screen p-4 md:p-6 lg:p-8 selection:bg-friendly-blue selection:text-white">
 
-    <!-- Supabase Modal -->
-    <div id="supabaseModal" class="hidden fixed inset-0 bg-slate-900/60 flex items-center justify-center z-50 backdrop-blur-sm transition-all p-4">
-        <div class="bg-slate-800 rounded-[2rem] shadow-2xl p-8 w-full max-w-md border border-slate-700">
-            <div class="flex justify-between items-center mb-6">
-                <div class="flex items-center bg-friendly-blue/10 px-4 py-2 rounded-full text-friendly-blue">
-                    <i data-lucide="database" class="w-5 h-5 mr-2"></i>
-                    <h3 class="text-lg font-bold">Connect Database</h3>
-                </div>
-                <button id="closeSupabaseBtn" class="text-slate-400 hover:text-white bg-slate-700/50 hover:bg-slate-700 p-2 rounded-full transition-colors">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-            
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-slate-300 mb-1">Project URL</label>
-                    <input type="text" id="supaUrl" value="https://wzoyahpilghrffedbclc.supabase.co" class="w-full p-3 bg-slate-900/50 border border-slate-700 rounded-2xl focus:ring-2 focus:ring-friendly-blue focus:border-transparent outline-none text-sm text-white transition-all" />
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-slate-300 mb-1">Anon / API Key</label>
-                    <input type="password" id="supaKey" value="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6b3lhaHBpbGdocmZmZWRiY2xjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NTI5MDEsImV4cCI6MjA4OTQyODkwMX0.uv-Mw91g0a2qkhZyMdeEmwQXI2d9EMP5QC-vM5arjyw" class="w-full p-3 bg-slate-900/50 border border-slate-700 rounded-2xl focus:ring-2 focus:ring-friendly-blue focus:border-transparent outline-none text-sm text-white transition-all" />
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-slate-300 mb-1">Table Name</label>
-                    <input type="text" id="supaTable" value="sales_txn" class="w-full p-3 bg-slate-900/50 border border-slate-700 rounded-2xl focus:ring-2 focus:ring-friendly-blue focus:border-transparent outline-none text-sm text-white transition-all" />
-                </div>
-            </div>
-            
-            <div class="mt-8 flex justify-end space-x-3">
-                <button id="cancelSupabaseBtn" class="px-6 py-3 text-sm text-slate-300 hover:bg-slate-700 rounded-full font-medium transition-colors">Cancel</button>
-                <button id="fetchSupabaseBtn" class="px-6 py-3 text-sm text-slate-900 bg-friendly-blue hover:bg-blue-400 rounded-full font-bold flex items-center transition-transform hover:scale-105 active:scale-95 shadow-lg shadow-blue-500/20">
-                    <i data-lucide="cloud-download" class="w-4 h-4 mr-2" id="fetchIcon"></i> 
-                    <i data-lucide="loader-2" class="w-4 h-4 mr-2 animate-spin hidden" id="loadingIcon"></i>
-                    <span id="fetchBtnText">Fetch Data</span>
-                </button>
-            </div>
-        </div>
-    </div>
-
     <!-- Header -->
     <div class="flex flex-col md:flex-row justify-between items-center bg-slate-800 p-6 rounded-[2rem] shadow-sm border border-slate-700 mb-6">
         <div class="flex items-center space-x-4">
@@ -120,11 +81,14 @@
             </div>
         </div>
         <div class="mt-5 md:mt-0 flex items-center space-x-3">
-            <button id="openSupabaseBtn" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-5 py-2.5 rounded-full flex items-center transition-colors text-sm font-medium">
-                <i data-lucide="database" class="w-4 h-4 mr-2 text-friendly-green"></i> Database
-            </button>
-            <label class="cursor-pointer bg-friendly-blue hover:bg-blue-400 text-slate-900 px-5 py-2.5 rounded-full flex items-center transition-all hover:scale-105 active:scale-95 text-sm font-bold shadow-lg shadow-blue-500/20">
-                <i data-lucide="upload-cloud" class="w-4 h-4 mr-2"></i> Upload CSV
+            <div id="syncStatus" class="text-sm font-medium text-slate-400 flex items-center mr-2">
+                <div class="w-2 h-2 rounded-full bg-friendly-green animate-pulse mr-2" id="syncDot"></div>
+                <span id="syncText">Live Data</span>
+            </div>
+            <label class="cursor-pointer bg-friendly-blue hover:bg-blue-400 text-slate-900 px-5 py-2.5 rounded-full flex items-center transition-all hover:scale-105 active:scale-95 text-sm font-bold shadow-lg shadow-blue-500/20" id="uploadLabel">
+                <i data-lucide="upload-cloud" class="w-4 h-4 mr-2" id="uploadIcon"></i>
+                <i data-lucide="loader-2" class="w-4 h-4 mr-2 animate-spin hidden" id="uploadSpinner"></i>
+                <span id="uploadText">Upload to DB</span>
                 <input type="file" accept=".csv" class="hidden" id="csvFileInput" />
             </label>
         </div>
@@ -303,7 +267,7 @@
         </div>
     </div>
 
-    <!-- 4. Actionable Insights Panel (Horizontal Grid) -->
+    <!-- 4. Actionable Insights Panel -->
     <div class="bg-slate-800 rounded-[1.5rem] border border-slate-700 flex flex-col overflow-hidden mb-6">
         <div class="bg-slate-750/30 p-5 border-b border-slate-700 flex items-center justify-between">
             <h3 class="text-base font-bold text-white flex items-center">
@@ -318,6 +282,11 @@
 
     <!-- Main JavaScript Logic -->
     <script>
+        // --- Supabase Config (Hidden backend config) ---
+        const SUPA_URL = "https://wzoyahpilghrffedbclc.supabase.co";
+        const SUPA_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6b3lhaHBpbGdocmZmZWRiY2xjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NTI5MDEsImV4cCI6MjA4OTQyODkwMX0.uv-Mw91g0a2qkhZyMdeEmwQXI2d9EMP5QC-vM5arjyw";
+        const SUPA_TABLE = "sales_txn";
+
         // --- Initialization ---
         lucide.createIcons();
         Chart.register(window['chartjs-plugin-annotation']);
@@ -329,8 +298,6 @@
         let rawData = [];
         let filteredData = [];
         let charts = { trend: null, branch: null, scatter: null };
-
-        // Cross-Filter State
         let activeProductFilter = null;
 
         const cBlue = '#60A5FA', cGreen = '#34D399', cOrange = '#FBBF24', cPurple = '#A78BFA', cRose = '#FB7185';
@@ -353,7 +320,23 @@
         const formatCurr = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'THB', minimumFractionDigits: 0 }).format(val);
         const formatNum = (val) => new Intl.NumberFormat('en-US').format(val);
 
-        // --- Channel Categorization Logic ---
+        // UI Feedback Handlers
+        const setSyncStatus = (status, text) => {
+            const dot = document.getElementById('syncDot');
+            const txt = document.getElementById('syncText');
+            if(status === 'loading') {
+                dot.className = "w-2 h-2 rounded-full bg-friendly-orange animate-pulse mr-2";
+                txt.innerText = text || "Syncing...";
+            } else if (status === 'error') {
+                dot.className = "w-2 h-2 rounded-full bg-friendly-rose mr-2";
+                txt.innerText = text || "Offline";
+            } else {
+                dot.className = "w-2 h-2 rounded-full bg-friendly-green animate-pulse mr-2";
+                txt.innerText = text || "Live Data";
+            }
+        }
+
+        // --- Data Categorization & Enrichment ---
         const categorizeChannel = (rawChannel) => {
             if (!rawChannel) return 'Other';
             const lower = rawChannel.toLowerCase();
@@ -386,66 +369,115 @@
                 NumericNetPrice: unitPrice, 
                 NumericCost: cost,
                 YearMonth: obj.InvDate && obj.InvDate.length >= 7 ? obj.InvDate.substring(0, 7) : 'Unknown',
-                // Map the channel here
                 SaleChannelName: categorizeChannel(obj.SaleChannelName),
                 ProductGroup: obj.deptname ? obj.deptname : (obj.ProductName ? 'Uncategorized' : 'Unknown')
             };
         };
 
-        const parseCSV = (csvText) => {
+        const cleanForDb = (row) => {
+            const numericFields = ['Qty', 'UnitPriceIncVat', 'DiscountRate', 'UnitPrice', 'OthItemDiscAmt', 'OthItemDiscAmtIncVat', 'AvgCost'];
+            const cleaned = { ...row };
+            numericFields.forEach(field => {
+                if (cleaned[field] === '' || cleaned[field] === undefined || cleaned[field] === null) {
+                    cleaned[field] = null;
+                } else if (typeof cleaned[field] === 'string') {
+                    cleaned[field] = parseFloat(cleaned[field].replace(/,/g, ''));
+                }
+            });
+            const dateFields = ['SODate', 'InvDate'];
+            dateFields.forEach(field => {
+                if (cleaned[field] === '' || cleaned[field] === undefined) cleaned[field] = null;
+            });
+            return cleaned;
+        };
+
+        const parseCSVRaw = (csvText) => {
             const lines = csvText.split(/\r?\n/);
             if (lines.length < 2) return [];
             const headers = lines[0].split(',').map(h => h.trim());
             const result = [];
             for (let i = 1; i < lines.length; i++) {
                 if (!lines[i].trim()) continue;
-                const currentline = lines[i].split(','); 
+                // Handle commas inside quotes
+                const currentline = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                
                 const obj = {};
+                let hasData = false;
                 for (let j = 0; j < headers.length; j++) {
-                    obj[headers[j]] = currentline[j] ? currentline[j].trim() : '';
+                    let val = currentline[j] ? currentline[j].trim() : '';
+                    if (val.startsWith('"') && val.endsWith('"')) val = val.substring(1, val.length - 1);
+                    obj[headers[j]] = val;
+                    if(val) hasData = true;
                 }
-                result.push(enrichData(obj));
+                if(hasData) result.push(obj);
             }
             return result;
         };
 
-        const generateMockData = () => {
-            const data = [];
-            // We use the exact grouping requested for mock data to show functionality
-            const channels = ['Showroom', 'Modern trade', 'Online', 'Event', 'B2B Project', 'Subscription'];
-            const products = [
-                { name: 'Product A (Premium)', group: 'Main Equipment', cost: 1500, price: 3500 },
-                { name: 'Product B (Standard)', group: 'Main Equipment', cost: 800, price: 1200 },
-                { name: 'Product C (Economy)', group: 'Accessories', cost: 200, price: 299 },
-                { name: 'Product D (Misc)', group: 'Accessories', cost: 50, price: 250 },
-                { name: 'Service Deposit', group: 'Service', cost: 0, price: 5000 },
-                { name: 'Maintenance Fee', group: 'Service', cost: 100, price: 1000 },
-            ];
-            for (let i = 0; i < 800; i++) {
-                const isReturn = Math.random() > 0.95;
-                const channel = channels[Math.floor(Math.random() * channels.length)];
-                const product = products[Math.floor(Math.random() * products.length)];
-                const qty = Math.floor(Math.random() * 5) + 1;
-                const date = new Date();
-                date.setDate(date.getDate() - Math.floor(Math.random() * 90));
+        // --- Database Operations ---
+        const fetchDashboardData = async () => {
+            setSyncStatus('loading', 'Fetching DB...');
+            try {
+                const endpoint = `${SUPA_URL.replace(/\/$/, '')}/rest/v1/${SUPA_TABLE}?select=*&limit=10000`;
+                const response = await fetch(endpoint, {
+                    method: 'GET',
+                    headers: { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}`, 'Content-Type': 'application/json' }
+                });
+
+                if (!response.ok) throw new Error('Fetch failed');
+                const data = await response.json();
                 
-                // Directly format as if it came from CSV, enrichData will categorize it
-                data.push(enrichData({
-                    InvType: isReturn ? 'C' : 'P',
-                    InvDate: date.toISOString().split('T')[0],
-                    SaleChannelName: channel, 
-                    ProductName: product.name, 
-                    deptname: product.group,
-                    Qty: isReturn ? -qty : qty,
-                    UnitPriceIncVat: isReturn ? -(product.price * qty) : (product.price * qty),
-                    AvgCost: isReturn ? -(product.cost * qty) : (product.cost * qty)
-                }));
+                if (data && data.length > 0) {
+                    rawData = data.map(enrichData);
+                    populateFilterOptions();
+                    applyFilters();
+                    setSyncStatus('success', 'Live Data');
+                } else {
+                    setSyncStatus('error', 'DB Empty');
+                }
+            } catch (err) {
+                console.error("DB Fetch Error: ", err);
+                setSyncStatus('error', 'Offline');
             }
-            return data;
         };
 
+        const uploadToSupabase = async (rawCsvArray) => {
+            setSyncStatus('loading', 'Uploading...');
+            
+            // Clean data
+            const cleanedData = rawCsvArray.map(cleanForDb);
+            const chunkSize = 1000;
+            const endpoint = `${SUPA_URL.replace(/\/$/, '')}/rest/v1/${SUPA_TABLE}`;
+
+            try {
+                // Upload in chunks
+                for (let i = 0; i < cleanedData.length; i += chunkSize) {
+                    const chunk = cleanedData.slice(i, i + chunkSize);
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: { 
+                            'apikey': SUPA_KEY, 
+                            'Authorization': `Bearer ${SUPA_KEY}`, 
+                            'Content-Type': 'application/json',
+                            'Prefer': 'return=minimal'
+                        },
+                        body: JSON.stringify(chunk)
+                    });
+                    if (!response.ok) throw new Error(`Chunk upload failed`);
+                }
+                
+                // Once upload is successful, fetch the latest data to update dashboard
+                await fetchDashboardData();
+                
+            } catch (err) {
+                console.error("DB Upload Error: ", err);
+                alert("Upload encountered an error. See console for details.");
+                setSyncStatus('error', 'Upload Failed');
+            }
+        };
+
+        // --- Dashboard Update Logic ---
         const populateFilterOptions = () => {
-            // Because data is enriched and grouped, SaleChannelName will only contain grouped categories
             const channels = ['All', ...Array.from(new Set(rawData.map(d => d.SaleChannelName))).filter(Boolean).sort()];
             const groups = ['All', ...Array.from(new Set(rawData.map(d => d.ProductGroup))).filter(Boolean).sort()];
             
@@ -473,7 +505,6 @@
             lucide.createIcons();
         };
 
-        // Exposed globally for onclick handlers in HTML strings
         window.toggleProductFilter = (productName) => {
             activeProductFilter = (activeProductFilter === productName) ? null : productName;
             applyFilters();
@@ -632,7 +663,6 @@
                 },
                 options: { 
                     responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
-                    // Click to Cross-filter Branch
                     onClick: (e, elements, chart) => {
                         if(elements[0]) {
                             const bName = chart.data.labels[elements[0].index];
@@ -661,8 +691,7 @@
                 else if (d.qty < avgQty && d.margin >= avgMargin) color = cBlue; 
                 else color = cRose; 
                 
-                // Highlight selected product
-                if (activeProductFilter && d.name !== activeProductFilter) color = '#334155'; // dim unselected
+                if (activeProductFilter && d.name !== activeProductFilter) color = '#334155';
 
                 return { x: d.qty, y: d.margin, r: Math.max((d.rev / maxRev) * 20, 6), rawRev: d.rev, name: d.name, bgColor: color };
             });
@@ -679,7 +708,6 @@
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
-                    // Click to Cross-filter Product
                     onClick: (e, elements, chart) => {
                         if(elements[0]) {
                             const pName = chart.data.datasets[0].data[elements[0].index].name;
@@ -771,80 +799,46 @@
             lucide.createIcons();
         };
 
-        // --- Event Listeners ---
-        document.getElementById('csvFileInput').addEventListener('change', (e) => {
+        // --- Event Listeners & Start ---
+        
+        // Handle File Upload to Supabase DB
+        document.getElementById('csvFileInput').addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (!file) return;
+
+            const iconD = document.getElementById('uploadIcon');
+            const iconL = document.getElementById('uploadSpinner');
+            const txt = document.getElementById('uploadText');
+            const label = document.getElementById('uploadLabel');
+
+            iconD.classList.add('hidden');
+            iconL.classList.remove('hidden');
+            txt.innerText = "Uploading...";
+            label.classList.add('opacity-75', 'cursor-not-allowed', 'pointer-events-none');
+
             const reader = new FileReader();
-            reader.onload = (evt) => {
-                const parsed = parseCSV(evt.target.result);
-                if (parsed.length) {
-                    rawData = parsed;
-                    populateFilterOptions();
-                    applyFilters();
-                } else alert("No data found or invalid file format.");
+            reader.onload = async (evt) => {
+                const parsedRaw = parseCSVRaw(evt.target.result);
+                if (parsedRaw.length) {
+                    await uploadToSupabase(parsedRaw);
+                } else {
+                    alert("No valid data found in CSV.");
+                }
+                // Reset Upload Button UI
+                iconD.classList.remove('hidden');
+                iconL.classList.add('hidden');
+                txt.innerText = "Upload to DB";
+                label.classList.remove('opacity-75', 'cursor-not-allowed', 'pointer-events-none');
+                e.target.value = ''; // Reset input
             };
             reader.readAsText(file);
         });
 
         Object.values(elFilters).forEach(el => el.addEventListener('change', applyFilters));
 
-        const toggleSupaModal = (show) => {
-            const modal = document.getElementById('supabaseModal');
-            if(show) {
-                modal.classList.remove('hidden');
-                setTimeout(() => modal.classList.add('opacity-100'), 10);
-            } else {
-                modal.classList.add('hidden');
-            }
-        };
-        
-        document.getElementById('openSupabaseBtn').addEventListener('click', () => toggleSupaModal(true));
-        document.getElementById('closeSupabaseBtn').addEventListener('click', () => toggleSupaModal(false));
-        document.getElementById('cancelSupabaseBtn').addEventListener('click', () => toggleSupaModal(false));
+        // Initial Load directly from the Database
+        fetchDashboardData();
 
-        document.getElementById('fetchSupabaseBtn').addEventListener('click', async () => {
-            const url = document.getElementById('supaUrl').value;
-            const key = document.getElementById('supaKey').value;
-            const table = document.getElementById('supaTable').value;
-            
-            if (!url || !key) return alert("Please enter URL and API Key");
-
-            const btnText = document.getElementById('fetchBtnText');
-            const iconD = document.getElementById('fetchIcon');
-            const iconL = document.getElementById('loadingIcon');
-            
-            btnText.innerText = "Connecting...";
-            iconD.classList.add('hidden'); iconL.classList.remove('hidden');
-
-            try {
-                const endpoint = `${url.replace(/\/$/, '')}/rest/v1/${table}?select=*&limit=10000`;
-                const response = await fetch(endpoint, {
-                    method: 'GET',
-                    headers: { 'apikey': key, 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' }
-                });
-
-                if (!response.ok) throw new Error((await response.json()).message || 'Database connection failed');
-                const data = await response.json();
-                
-                if (data && data.length) {
-                    rawData = data.map(enrichData);
-                    populateFilterOptions();
-                    applyFilters();
-                    toggleSupaModal(false);
-                } else alert("No data found in this table");
-            } catch (err) {
-                alert("Error: " + err.message);
-            } finally {
-                btnText.innerText = "Fetch Data";
-                iconD.classList.remove('hidden'); iconL.classList.add('hidden');
-            }
-        });
-
-        // Run Initial Mock Data
-        rawData = generateMockData();
-        populateFilterOptions();
-        applyFilters();
     </script>
 </body>
 </html>
