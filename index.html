@@ -286,6 +286,7 @@
         const SUPA_URL = "https://wzoyahpilghrffedbclc.supabase.co";
         const SUPA_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6b3lhaHBpbGdocmZmZWRiY2xjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NTI5MDEsImV4cCI6MjA4OTQyODkwMX0.uv-Mw91g0a2qkhZyMdeEmwQXI2d9EMP5QC-vM5arjyw";
         const SUPA_TABLE = "sales_txn";
+        const METHOD_TABLE = "sale_method";
 
         // --- Initialization ---
         lucide.createIcons();
@@ -297,6 +298,7 @@
 
         let rawData = [];
         let filteredData = [];
+        let saleMethodMap = {}; // Maps SaleMethodID to 'Sales Channel' Name
         let charts = { trend: null, branch: null, scatter: null };
         let activeProductFilter = null;
 
@@ -337,7 +339,9 @@
         }
 
         // --- Data Categorization & Enrichment ---
-        const categorizeChannel = (rawChannel) => {
+        
+        // Fallback categorizer if table join fails or is offline
+        const categorizeChannelFallback = (rawChannel) => {
             if (!rawChannel) return 'Other';
             const lower = rawChannel.toLowerCase();
             if (lower.includes('showroom') || lower.includes('mp')) return 'Showroom';
@@ -384,6 +388,19 @@
                 cost = Math.abs(cost);
             }
             
+            // 4. Resolve Channel Name (Join with Sale Method Map)
+            let channelName = 'Other';
+            if (Object.keys(saleMethodMap).length > 0 && obj.SaleMethod) {
+                let mappedChannel = saleMethodMap[obj.SaleMethod];
+                if (mappedChannel) {
+                    // Remove "MP " prefix to make it look clean (e.g. "MP Online" -> "Online")
+                    channelName = mappedChannel.replace(/^MP\s+/i, '').trim();
+                }
+            } else {
+                // Fallback if mapping isn't loaded
+                channelName = categorizeChannelFallback(obj.SaleChannelName);
+            }
+
             return {
                 ...obj, 
                 NumericQty: qty, 
@@ -391,7 +408,7 @@
                 NumericNetPrice: unitPrice, 
                 NumericCost: cost,
                 YearMonth: obj.InvDate && obj.InvDate.length >= 7 ? obj.InvDate.substring(0, 7) : 'Unknown',
-                SaleChannelName: categorizeChannel(obj.SaleChannelName),
+                SaleChannelName: channelName,
                 ProductGroup: obj.deptname ? obj.deptname : (obj.ProductName ? 'Uncategorized' : 'Unknown')
             };
         };
@@ -420,7 +437,6 @@
             const result = [];
             for (let i = 1; i < lines.length; i++) {
                 if (!lines[i].trim()) continue;
-                // Handle commas inside quotes
                 const currentline = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                 
                 const obj = {};
@@ -440,11 +456,28 @@
         const fetchDashboardData = async () => {
             setSyncStatus('loading', 'Fetching DB...');
             try {
-                const endpoint = `${SUPA_URL.replace(/\/$/, '')}/rest/v1/${SUPA_TABLE}?select=*&limit=10000`;
-                const response = await fetch(endpoint, {
-                    method: 'GET',
-                    headers: { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}`, 'Content-Type': 'application/json' }
-                });
+                const baseUrl = SUPA_URL.replace(/\/$/, '');
+                const headers = { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}`, 'Content-Type': 'application/json' };
+
+                // 1. Fetch Sale Method Mapping first
+                try {
+                    const methodEndpoint = `${baseUrl}/rest/v1/${METHOD_TABLE}?select=*`;
+                    const methodRes = await fetch(methodEndpoint, { method: 'GET', headers });
+                    if (methodRes.ok) {
+                        const methodsData = await methodRes.json();
+                        saleMethodMap = {};
+                        methodsData.forEach(m => {
+                            if (m.SaleMethodID) saleMethodMap[m.SaleMethodID] = m['Sales Channel'];
+                        });
+                        console.log("Loaded Sale Method Map:", saleMethodMap);
+                    }
+                } catch (e) {
+                    console.warn("Could not fetch sale method mapping. Will use fallback.", e);
+                }
+
+                // 2. Fetch main Transactions
+                const endpoint = `${baseUrl}/rest/v1/${SUPA_TABLE}?select=*&limit=10000`;
+                const response = await fetch(endpoint, { method: 'GET', headers });
 
                 if (!response.ok) throw new Error('Fetch failed');
                 const data = await response.json();
@@ -467,13 +500,11 @@
         const uploadToSupabase = async (rawCsvArray) => {
             setSyncStatus('loading', 'Uploading...');
             
-            // Clean data for DB (uploading raw un-enriched data allows future changes in parsing logic)
             const cleanedData = rawCsvArray.map(cleanForDb);
             const chunkSize = 1000;
             const endpoint = `${SUPA_URL.replace(/\/$/, '')}/rest/v1/${SUPA_TABLE}`;
 
             try {
-                // Upload in chunks
                 for (let i = 0; i < cleanedData.length; i += chunkSize) {
                     const chunk = cleanedData.slice(i, i + chunkSize);
                     const response = await fetch(endpoint, {
@@ -489,7 +520,6 @@
                     if (!response.ok) throw new Error(`Chunk upload failed`);
                 }
                 
-                // Once upload is successful, fetch the latest data to update dashboard
                 await fetchDashboardData();
                 
             } catch (err) {
@@ -519,9 +549,10 @@
                 date.setDate(date.getDate() - Math.floor(Math.random() * 90));
                 
                 const enriched = enrichData({
-                    InvType: isReturn ? 'CN' : 'N', // N, S, Z are sales
+                    InvType: isReturn ? 'CN' : 'N',
                     InvDate: date.toISOString().split('T')[0],
                     SaleChannelName: channel, 
+                    SaleMethod: null, // Fallback trigger
                     ProductName: product.name, 
                     deptname: product.group,
                     Qty: qty, 
