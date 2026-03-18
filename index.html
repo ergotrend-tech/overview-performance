@@ -350,16 +350,38 @@
         };
 
         const enrichData = (obj) => {
+            const pName = obj.ProductName || '';
+            
+            // 1. Filter out 'เงินมัดจำ' (Deposit)
+            if (pName.includes('เงินมัดจำ') || pName.toUpperCase().includes('DEPOSIT')) {
+                return null;
+            }
+
+            const invType = (obj.InvType || '').trim().toUpperCase();
+            const isPositive = ['N', 'S', 'Z'].includes(invType);
+            const isNegative = ['C', 'CN'].includes(invType);
+
+            // 2. Only allow N, S, Z as Sales and C, CN as Returns
+            if (!isPositive && !isNegative) {
+                return null;
+            }
+
             let qty = parseFloat(obj.Qty) || 0;
             let revenueIncVat = parseFloat(obj.UnitPriceIncVat) || 0;
             let unitPrice = parseFloat(obj.UnitPrice) || 0;
             let cost = parseFloat(obj.AvgCost) || 0;
             
-            if (obj.InvType === 'C' || obj.InvType === 'CN') {
+            // 3. Set Negative logic for CN/C
+            if (isNegative) {
                 qty = -Math.abs(qty);
                 revenueIncVat = -Math.abs(revenueIncVat);
                 unitPrice = -Math.abs(unitPrice);
                 cost = -Math.abs(cost);
+            } else {
+                qty = Math.abs(qty);
+                revenueIncVat = Math.abs(revenueIncVat);
+                unitPrice = Math.abs(unitPrice);
+                cost = Math.abs(cost);
             }
             
             return {
@@ -428,7 +450,8 @@
                 const data = await response.json();
                 
                 if (data && data.length > 0) {
-                    rawData = data.map(enrichData);
+                    // Map and filter out invalid rows (nulls)
+                    rawData = data.map(enrichData).filter(item => item !== null);
                     populateFilterOptions();
                     applyFilters();
                     setSyncStatus('success', 'Live Data');
@@ -444,7 +467,7 @@
         const uploadToSupabase = async (rawCsvArray) => {
             setSyncStatus('loading', 'Uploading...');
             
-            // Clean data
+            // Clean data for DB (uploading raw un-enriched data allows future changes in parsing logic)
             const cleanedData = rawCsvArray.map(cleanForDb);
             const chunkSize = 1000;
             const endpoint = `${SUPA_URL.replace(/\/$/, '')}/rest/v1/${SUPA_TABLE}`;
@@ -474,6 +497,42 @@
                 alert("Upload encountered an error. See console for details.");
                 setSyncStatus('error', 'Upload Failed');
             }
+        };
+
+        const generateMockData = () => {
+            const data = [];
+            const channels = ['Showroom', 'Modern trade', 'Online', 'Event', 'B2B Project', 'Subscription'];
+            const products = [
+                { name: 'Product A (Premium)', group: 'Main Equipment', cost: 1500, price: 3500 },
+                { name: 'Product B (Standard)', group: 'Main Equipment', cost: 800, price: 1200 },
+                { name: 'Product C (Economy)', group: 'Accessories', cost: 200, price: 299 },
+                { name: 'Product D (Misc)', group: 'Accessories', cost: 50, price: 250 },
+                { name: 'เงินมัดจำ', group: 'Service', cost: 0, price: 5000 }, // Will be filtered out
+                { name: 'Maintenance Fee', group: 'Service', cost: 100, price: 1000 },
+            ];
+            for (let i = 0; i < 800; i++) {
+                const isReturn = Math.random() > 0.95;
+                const channel = channels[Math.floor(Math.random() * channels.length)];
+                const product = products[Math.floor(Math.random() * products.length)];
+                const qty = Math.floor(Math.random() * 5) + 1;
+                const date = new Date();
+                date.setDate(date.getDate() - Math.floor(Math.random() * 90));
+                
+                const enriched = enrichData({
+                    InvType: isReturn ? 'CN' : 'N', // N, S, Z are sales
+                    InvDate: date.toISOString().split('T')[0],
+                    SaleChannelName: channel, 
+                    ProductName: product.name, 
+                    deptname: product.group,
+                    Qty: qty, 
+                    UnitPriceIncVat: product.price * qty,
+                    AvgCost: product.cost * qty
+                });
+                if (enriched) {
+                    data.push(enriched);
+                }
+            }
+            return data;
         };
 
         // --- Dashboard Update Logic ---
@@ -836,7 +895,12 @@
 
         Object.values(elFilters).forEach(el => el.addEventListener('change', applyFilters));
 
-        // Initial Load directly from the Database
+        // Run Initial Mock Data logic or try fetching Live DB immediately
+        rawData = generateMockData();
+        populateFilterOptions();
+        applyFilters();
+        
+        // Uncomment this to fetch live data on init automatically
         fetchDashboardData();
 
     </script>
