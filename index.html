@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sales & Productivity Dashboard</title>
     
-    <!-- Google Fonts: Inter (similar to Spotify's Circular font) -->
+    <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
@@ -19,19 +19,19 @@
                 extend: {
                     colors: {
                         spotify: {
-                            base: '#121212',       // Main background
-                            elevated: '#181818',   // Card background
-                            highlight: '#282828',  // Hover background
-                            press: '#000000',      // Pressed state
-                            green: '#1DB954',      // Brand Green
-                            greenHover: '#1ED760', // Hover Green
-                            text: '#FFFFFF',       // Primary Text
-                            subtext: '#B3B3B3',    // Secondary Text
-                            divider: '#2A2A2A',    // Borders
-                            error: '#E22134',      // Red
-                            warning: '#FFA42B',    // Orange/Yellow
-                            info: '#2E77D0',       // Blue
-                            purple: '#8C1932'      // Spotify genre purple
+                            base: '#121212',       
+                            elevated: '#181818',   
+                            highlight: '#282828',  
+                            press: '#000000',      
+                            green: '#1DB954',      
+                            greenHover: '#1ED760', 
+                            text: '#FFFFFF',       
+                            subtext: '#B3B3B3',    
+                            divider: '#2A2A2A',    
+                            error: '#E22134',      
+                            warning: '#FFA42B',    
+                            info: '#2E77D0',       
+                            purple: '#8C1932'      
                         }
                     },
                     fontFamily: {
@@ -57,13 +57,11 @@
             -webkit-font-smoothing: antialiased;
         }
         
-        /* Spotify Custom Scrollbar */
         ::-webkit-scrollbar { width: 10px; height: 10px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 8px; border: 2px solid transparent; background-clip: padding-box; }
         ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.4); border: 2px solid transparent; background-clip: padding-box; }
 
-        /* Input overrides for dark mode dates */
         input[type="date"]::-webkit-calendar-picker-indicator {
             filter: invert(0.8);
             opacity: 0.6;
@@ -72,9 +70,6 @@
 
         .hidden { display: none !important; }
         
-        /* * PREMIUM GLASSMORPHISM CARDS
-         * Combines Spotify dark palette with glass transparency and glows 
-         */
         .sp-card {
             background: rgba(24, 24, 24, 0.65);
             backdrop-filter: blur(20px);
@@ -87,11 +82,10 @@
         .sp-card:hover {
             background: rgba(40, 40, 40, 0.75);
             border: 1px solid rgba(255, 255, 255, 0.15);
-            box-shadow: 0 12px 40px rgba(29, 185, 84, 0.12); /* Subtle Spotify Green Glow */
+            box-shadow: 0 12px 40px rgba(29, 185, 84, 0.12);
             transform: translateY(-2px);
         }
 
-        /* Glass Filters */
         .glass-pill {
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(12px);
@@ -108,16 +102,46 @@
 </head>
 <body class="min-h-screen selection:bg-spotify-green selection:text-white relative z-0">
 
-    <!-- Ambient Background Glows (Creates the deep translucent feel) -->
+    <!-- Ambient Background Glows -->
     <div class="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none -z-20">
-        <!-- Top header gradient -->
         <div class="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-[#1E3264]/60 to-transparent"></div>
-        <!-- Ambient Orbs -->
         <div class="absolute top-[-10%] left-[-5%] w-[600px] h-[600px] rounded-full bg-spotify-green/10 blur-[120px]"></div>
         <div class="absolute bottom-[-10%] right-[-10%] w-[700px] h-[700px] rounded-full bg-[#1E3264]/20 blur-[150px]"></div>
     </div>
 
-    <div class="p-4 md:p-6 lg:p-8 max-w-[1600px] mx-auto z-10 relative">
+    <!-- ================= LOGIN SCREEN ================= -->
+    <div id="loginView" class="min-h-screen flex items-center justify-center px-4 relative z-50">
+        <div class="bg-[#181818] p-8 md:p-10 rounded-[24px] w-full max-w-md border border-[#282828] shadow-2xl">
+            <div class="flex justify-center mb-6 text-spotify-green">
+                <i data-lucide="bar-chart-3" class="w-12 h-12"></i>
+            </div>
+            <h2 class="text-3xl font-extrabold text-white text-center mb-8 tracking-tight">Log in to Dashboard</h2>
+            
+            <div id="loginError" class="hidden bg-spotify-error/10 border border-spotify-error text-spotify-error px-4 py-3 rounded-lg text-sm font-medium mb-6 flex items-center">
+                <i data-lucide="alert-circle" class="w-4 h-4 mr-2 flex-shrink-0"></i>
+                <span id="loginErrorText">Authentication failed.</span>
+            </div>
+
+            <form id="loginForm" class="space-y-5">
+                <div>
+                    <label class="block text-sm font-bold text-white mb-2">Email address</label>
+                    <input type="email" id="emailInput" required class="w-full bg-[#121212] border border-[#282828] text-white rounded-lg px-4 py-3 focus:outline-none focus:border-white focus:ring-1 focus:ring-white transition-colors placeholder-[#B3B3B3]" placeholder="Email">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-white mb-2">Password</label>
+                    <input type="password" id="passwordInput" required class="w-full bg-[#121212] border border-[#282828] text-white rounded-lg px-4 py-3 focus:outline-none focus:border-white focus:ring-1 focus:ring-white transition-colors placeholder-[#B3B3B3]" placeholder="Password">
+                </div>
+                
+                <button type="submit" id="loginBtn" class="w-full bg-spotify-green hover:bg-spotify-greenHover text-black font-bold py-3.5 rounded-full transition-transform hover:scale-[1.02] active:scale-[0.98] mt-4 flex justify-center items-center shadow-[0_0_15px_rgba(29,185,84,0.3)]">
+                    <i data-lucide="loader-2" class="w-5 h-5 mr-2 animate-spin hidden" id="loginSpinner"></i>
+                    <span id="loginBtnText">Log In</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= DASHBOARD MAIN VIEW ================= -->
+    <div id="dashboardView" class="hidden p-4 md:p-6 lg:p-8 max-w-[1600px] mx-auto z-10 relative">
 
         <!-- Header -->
         <div class="flex flex-col md:flex-row justify-between items-end mb-8 pt-4">
@@ -131,12 +155,16 @@
                     <span id="syncText">Live Data</span>
                 </div>
                 <!-- Primary Glowing Button -->
-                <label class="cursor-pointer bg-spotify-green hover:bg-spotify-greenHover text-black px-8 py-3 rounded-full flex items-center transition-all hover:scale-105 active:scale-95 text-sm font-bold shadow-[0_0_20px_rgba(29,185,84,0.3)] hover:shadow-[0_0_30px_rgba(29,185,84,0.5)]" id="uploadLabel">
+                <label class="cursor-pointer bg-spotify-green hover:bg-spotify-greenHover text-black px-6 py-2.5 rounded-full flex items-center transition-all hover:scale-105 active:scale-95 text-sm font-bold shadow-[0_0_20px_rgba(29,185,84,0.3)] hover:shadow-[0_0_30px_rgba(29,185,84,0.5)]" id="uploadLabel">
                     <i data-lucide="upload" class="w-4 h-4 mr-2" id="uploadIcon"></i>
                     <i data-lucide="loader-2" class="w-4 h-4 mr-2 animate-spin hidden" id="uploadSpinner"></i>
                     <span id="uploadText">Upload CSV</span>
                     <input type="file" accept=".csv" class="hidden" id="csvFileInput" />
                 </label>
+                <!-- Logout Button -->
+                <button id="logoutBtn" class="bg-transparent border border-[#B3B3B3] hover:border-white text-[#B3B3B3] hover:text-white px-4 py-2.5 rounded-full transition-colors text-sm font-bold flex items-center" title="Log Out">
+                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                </button>
             </div>
         </div>
 
@@ -217,7 +245,6 @@
 
         <!-- 2. Trends & Branch Productivity -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-            <!-- Sales Trend -->
             <div class="sp-card p-6 lg:col-span-2">
                 <h3 class="text-lg font-bold text-white mb-6 drop-shadow-md">Revenue & Profit Trend</h3>
                 <div class="h-[300px] relative w-full">
@@ -225,7 +252,6 @@
                 </div>
             </div>
 
-            <!-- Branch Productivity -->
             <div class="sp-card p-6 lg:col-span-1">
                 <h3 class="text-lg font-bold text-white mb-2 drop-shadow-md">Channel Performance</h3>
                 <p class="text-xs text-spotify-subtext mb-6 font-medium">
@@ -239,7 +265,6 @@
 
         <!-- 3. Efficiency & Top Sellers -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-            <!-- Product Efficiency Scatter -->
             <div class="sp-card p-6 lg:col-span-2 relative flex flex-col">
                 <div class="flex justify-between items-start mb-2">
                     <div>
@@ -255,8 +280,6 @@
                 
                 <div class="flex-1 min-h-[350px] relative w-full mt-4">
                     <canvas id="scatterChart"></canvas>
-                    
-                    <!-- Subtle Quadrant Labels -->
                     <div class="absolute top-2 right-6 text-xs font-bold text-spotify-subtext/50 pointer-events-none z-10 tracking-widest">STARS</div>
                     <div class="absolute bottom-10 right-6 text-xs font-bold text-spotify-subtext/50 pointer-events-none z-10 tracking-widest">CASH COWS</div>
                     <div class="absolute top-2 left-16 text-xs font-bold text-spotify-subtext/50 pointer-events-none z-10 tracking-widest">OPPORTUNITIES</div>
@@ -264,20 +287,16 @@
                 </div>
             </div>
 
-            <!-- Top Sellers List (Tracklist style) -->
             <div class="sp-card p-6 flex flex-col lg:col-span-1 h-full min-h-[450px]">
                 <h3 class="text-lg font-bold text-white mb-2 drop-shadow-md">Top Products</h3>
                 <p class="text-xs text-spotify-subtext mb-4 font-medium">
                     <i data-lucide="mouse-pointer-click" class="w-3 h-3 inline"></i> Select to filter
                 </p>
-                
-                <!-- Header Row -->
                 <div class="flex items-center justify-between px-2 pb-2 border-b border-white/10 mb-2">
                     <span class="text-xs text-spotify-subtext font-bold w-6">#</span>
                     <span class="text-xs text-spotify-subtext font-bold flex-1">Title</span>
                     <span class="text-xs text-spotify-subtext font-bold text-right">Revenue</span>
                 </div>
-
                 <div id="topSellersList" class="flex-1 overflow-y-auto space-y-1 pr-2 -mr-2">
                     <!-- Injected via JS -->
                 </div>
@@ -291,22 +310,25 @@
                 <!-- Insights will be injected here via JS -->
             </div>
         </div>
-
     </div>
 
     <!-- Main JavaScript Logic -->
     <script>
-        // --- Supabase Config (Hidden backend config) ---
+        // =========================================================
+        // ⚙️ ข้อมูลการเชื่อมต่อ Supabase (SUPABASE CONFIG) ⚙️
+        // =========================================================
         const SUPA_URL = "https://wzoyahpilghrffedbclc.supabase.co";
         const SUPA_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6b3lhaHBpbGdocmZmZWRiY2xjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NTI5MDEsImV4cCI6MjA4OTQyODkwMX0.uv-Mw91g0a2qkhZyMdeEmwQXI2d9EMP5QC-vM5arjyw";
         const SUPA_TABLE = "sales_txn";
         const METHOD_TABLE = "sale_method";
 
+        // Session State
+        let sessionToken = localStorage.getItem('sb_auth_token');
+
         // --- Initialization ---
         lucide.createIcons();
         Chart.register(window['chartjs-plugin-annotation']);
 
-        // Chart defaults matched to glass style
         Chart.defaults.color = '#B3B3B3'; 
         Chart.defaults.font.family = 'Inter, sans-serif';
         const gridColor = 'rgba(255, 255, 255, 0.06)'; 
@@ -317,7 +339,6 @@
         let charts = { trend: null, branch: null, scatter: null };
         let activeProductFilter = null;
 
-        // Palette
         const cGreen = '#1DB954', cWhite = '#FFFFFF', cGray = '#B3B3B3';
         const cBlue = '#2E77D0', cOrange = '#FFA42B', cRed = '#E22134', cPurple = '#8C1932';
 
@@ -332,17 +353,16 @@
             margin: document.getElementById('kpiMargin'), qty: document.getElementById('kpiQty'),
             returnRate: document.getElementById('kpiReturn')
         };
+        // Explicitly define elInsights to prevent ReferenceError
         const elInsights = document.getElementById('insightsPanel');
 
         const formatCurr = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'THB', minimumFractionDigits: 0 }).format(val);
         const formatNum = (val) => new Intl.NumberFormat('en-US').format(val);
 
-        // Dynamic Greeting
         const hour = new Date().getHours();
         const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
         document.getElementById('greetingText').innerText = greeting;
 
-        // UI Feedback Handlers
         const setSyncStatus = (status, text) => {
             const dot = document.getElementById('syncDot');
             const txt = document.getElementById('syncText');
@@ -358,7 +378,72 @@
             }
         }
 
-        // --- Data Categorization & Enrichment ---
+        // ================= AUTHENTICATION LOGIC (TRUE SUPABASE AUTH) =================
+        const loginView = document.getElementById('loginView');
+        const dashboardView = document.getElementById('dashboardView');
+        
+        const showDashboard = () => {
+            loginView.classList.add('hidden');
+            dashboardView.classList.remove('hidden');
+            fetchDashboardData();
+        };
+
+        const showLogin = () => {
+            dashboardView.classList.add('hidden');
+            loginView.classList.remove('hidden');
+            sessionToken = null;
+            localStorage.removeItem('sb_auth_token');
+        };
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('emailInput').value;
+            const password = document.getElementById('passwordInput').value;
+            
+            const btnText = document.getElementById('loginBtnText');
+            const spinner = document.getElementById('loginSpinner');
+            const errBox = document.getElementById('loginError');
+            const errText = document.getElementById('loginErrorText');
+
+            btnText.innerText = "Logging in...";
+            spinner.classList.remove('hidden');
+            errBox.classList.add('hidden');
+
+            try {
+                // Supabase Auth API call
+                const res = await fetch(`${SUPA_URL}/auth/v1/token?grant_type=password`, {
+                    method: 'POST',
+                    headers: { 'apikey': SUPA_KEY, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await res.json();
+                
+                if (!res.ok) throw new Error(data.error_description || data.msg || 'Login failed');
+                
+                sessionToken = data.access_token;
+                localStorage.setItem('sb_auth_token', sessionToken);
+                showDashboard();
+                
+            } catch (err) {
+                errText.innerText = err.message;
+                errBox.classList.remove('hidden');
+            } finally {
+                btnText.innerText = "Log In";
+                spinner.classList.add('hidden');
+            }
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', showLogin);
+
+        // Helper to get auth headers for database operations
+        const getAuthHeaders = () => ({
+            'apikey': SUPA_KEY,
+            'Authorization': `Bearer ${sessionToken}`,
+            'Content-Type': 'application/json'
+        });
+
+        // ================= DATA LOGIC =================
         const categorizeChannelFallback = (rawChannel) => {
             if (!rawChannel) return 'Other';
             const lower = rawChannel.toLowerCase();
@@ -386,9 +471,8 @@
             let absOthItemDiscAmt = Math.abs(parseFloat(obj.OthItemDiscAmt) || 0);
             let absAvgCost = Math.abs(parseFloat(obj.AvgCost) || 0);
             
-            // Revenue = (Qty * UnitPrice)*(100-DiscountRate)/100 - OthItemDiscAmt
+            // Updated Formula
             let revenue = (absQty * absUnitPrice) * ((100 - absDiscountRate) / 100) - absOthItemDiscAmt;
-            // COGS = Qty * AvgCost
             let cogs = absQty * absAvgCost;
 
             let finalQty = isNegative ? -absQty : absQty;
@@ -398,9 +482,7 @@
             let channelName = 'Other';
             if (Object.keys(saleMethodMap).length > 0 && obj.SaleMethod) {
                 let mappedChannel = saleMethodMap[obj.SaleMethod];
-                if (mappedChannel) {
-                    channelName = mappedChannel.replace(/^MP\s+/i, '').trim();
-                }
+                if (mappedChannel) channelName = mappedChannel.replace(/^MP\s+/i, '').trim();
             } else {
                 channelName = categorizeChannelFallback(obj.SaleChannelName);
             }
@@ -457,8 +539,9 @@
             setSyncStatus('loading', 'Fetching...');
             try {
                 const baseUrl = SUPA_URL.replace(/\/$/, '');
-                const headers = { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}`, 'Content-Type': 'application/json' };
+                const headers = getAuthHeaders(); // Uses Auth Header
 
+                // Fetch Methods (Map)
                 try {
                     const methodEndpoint = `${baseUrl}/rest/v1/${METHOD_TABLE}?select=*`;
                     const methodRes = await fetch(methodEndpoint, { method: 'GET', headers });
@@ -471,8 +554,14 @@
                     }
                 } catch (e) { console.warn("No method map"); }
 
+                // Fetch Transactions
                 const endpoint = `${baseUrl}/rest/v1/${SUPA_TABLE}?select=*&limit=10000`;
                 const response = await fetch(endpoint, { method: 'GET', headers });
+
+                if (response.status === 401 || response.status === 403) {
+                    showLogin(); // Force re-login if token is invalid
+                    throw new Error('Authentication required');
+                }
 
                 if (!response.ok) throw new Error('Fetch failed');
                 const data = await response.json();
@@ -484,7 +573,7 @@
                     setSyncStatus('success', 'Live Data');
                 } else setSyncStatus('error', 'DB Empty');
             } catch (err) {
-                setSyncStatus('error', 'Offline');
+                if(sessionToken) setSyncStatus('error', 'Offline');
             }
         };
 
@@ -493,15 +582,18 @@
             const cleanedData = rawCsvArray.map(cleanForDb);
             const chunkSize = 1000;
             const endpoint = `${SUPA_URL.replace(/\/$/, '')}/rest/v1/${SUPA_TABLE}`;
+            
+            const headers = getAuthHeaders();
+            headers['Prefer'] = 'return=minimal';
 
             try {
                 for (let i = 0; i < cleanedData.length; i += chunkSize) {
                     const chunk = cleanedData.slice(i, i + chunkSize);
-                    const response = await fetch(endpoint, {
-                        method: 'POST',
-                        headers: { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
-                        body: JSON.stringify(chunk)
-                    });
+                    const response = await fetch(endpoint, { method: 'POST', headers, body: JSON.stringify(chunk) });
+                    if (response.status === 401 || response.status === 403) {
+                        showLogin();
+                        throw new Error('Authentication required');
+                    }
                     if (!response.ok) throw new Error(`Chunk upload failed`);
                 }
                 await fetchDashboardData();
@@ -509,34 +601,6 @@
                 alert("Upload failed.");
                 setSyncStatus('error', 'Failed');
             }
-        };
-
-        const generateMockData = () => {
-            const data = [];
-            const channels = ['Showroom', 'Modern trade', 'Online', 'Event', 'B2B Project', 'Subscription'];
-            const products = [
-                { name: 'Product A (Premium)', group: 'Main Equipment', cost: 1500, price: 3500 },
-                { name: 'Product B (Standard)', group: 'Main Equipment', cost: 800, price: 1200 },
-                { name: 'Product C (Economy)', group: 'Accessories', cost: 200, price: 299 },
-                { name: 'Product D (Misc)', group: 'Accessories', cost: 50, price: 250 },
-                { name: 'เงินมัดจำ', group: 'Service', cost: 0, price: 5000 } 
-            ];
-            for (let i = 0; i < 800; i++) {
-                const isReturn = Math.random() > 0.95;
-                const channel = channels[Math.floor(Math.random() * channels.length)];
-                const product = products[Math.floor(Math.random() * products.length)];
-                const qty = Math.floor(Math.random() * 5) + 1;
-                const date = new Date(); date.setDate(date.getDate() - Math.floor(Math.random() * 90));
-                
-                const enriched = enrichData({
-                    InvType: isReturn ? 'CN' : 'N', InvDate: date.toISOString().split('T')[0],
-                    SaleChannelName: channel, SaleMethod: null,
-                    ProductName: product.name, deptname: product.group,
-                    Qty: qty, UnitPrice: product.price, DiscountRate: 0, OthItemDiscAmt: 0, AvgCost: product.cost
-                });
-                if (enriched) data.push(enriched);
-            }
-            return data;
         };
 
         // --- Dashboard Update Logic ---
@@ -743,10 +807,10 @@
             const maxRev = Math.max(...pData.map(d => d.rev), 1);
             const bubbleData = pData.map(d => {
                 let color = cGray; 
-                if (d.qty >= avgQty && d.margin >= avgMargin) color = cGreen; // Stars
-                else if (d.qty >= avgQty && d.margin < avgMargin) color = cOrange; // Cows
-                else if (d.qty < avgQty && d.margin >= avgMargin) color = cBlue; // Opps
-                else color = cRed; // Concerns
+                if (d.qty >= avgQty && d.margin >= avgMargin) color = cGreen; 
+                else if (d.qty >= avgQty && d.margin < avgMargin) color = cOrange; 
+                else if (d.qty < avgQty && d.margin >= avgMargin) color = cBlue; 
+                else color = cRed; 
                 
                 if (activeProductFilter && d.name !== activeProductFilter) color = 'rgba(255,255,255,0.1)';
 
@@ -758,7 +822,7 @@
                 data: {
                     datasets: [{
                         data: bubbleData,
-                        backgroundColor: bubbleData.map(d => d.bgColor.startsWith('rgba') ? d.bgColor : d.bgColor + 'CC'), // 80% opacity
+                        backgroundColor: bubbleData.map(d => d.bgColor.startsWith('rgba') ? d.bgColor : d.bgColor + 'CC'),
                         borderColor: bubbleData.map(d => d.bgColor.startsWith('rgba') ? 'transparent' : cWhite), 
                         borderWidth: bubbleData.map(d => d.bgColor.startsWith('rgba') ? 0 : 1),
                         hoverBackgroundColor: bubbleData.map(d => d.bgColor.startsWith('rgba') ? d.bgColor : d.bgColor),
@@ -842,8 +906,7 @@
             lucide.createIcons();
         };
 
-        // --- Event Listeners & Start ---
-        
+        // --- File Upload Logic ---
         document.getElementById('csvFileInput').addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (!file) return;
@@ -869,12 +932,12 @@
 
         Object.values(elFilters).forEach(el => el.addEventListener('change', applyFilters));
 
-        // Start
-        rawData = generateMockData();
-        populateFilterOptions();
-        applyFilters();
-        
-        fetchDashboardData();
+        // --- Boot Sequence ---
+        if (sessionToken) {
+            showDashboard();
+        } else {
+            showLogin();
+        }
 
     </script>
 </body>
